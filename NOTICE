@@ -1,0 +1,9 @@
+TMS320C54x Ghidra extension
+Copyright 2026 Gabriel Tremblay
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The instruction encodings (opcode and mask values, operand field positions) in
+data/languages/TMS320C54x.slaspec were taken from the opcode table in GNU binutils
+(opcodes/tic54x-opc.c, https://sourceware.org/binutils/). No binutils source code is included
+in this extension; make_slaspec.py and the SLEIGH specification were written independently.
