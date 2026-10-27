@@ -418,13 +418,6 @@ mmrx_r: "AR5" is mmrx=5 { export AR5; }
 mmrx_r: "AR6" is mmrx=6 { export AR6; }
 mmrx_r: "AR7" is mmrx=7 { export AR7; }
 mmrx_r: "SP" is mmrx=8 { export SP; }
-mmrx_r: "BK" is mmrx=9 { export BK; }
-mmrx_r: "BRC" is mmrx=10 { export BRC; }
-mmrx_r: "RSA" is mmrx=11 { export RSA; }
-mmrx_r: "REA" is mmrx=12 { export REA; }
-mmrx_r: "PMST" is mmrx=13 { export PMST; }
-mmrx_r: "XPC" is mmrx=14 { export XPC; }
-mmrx_r: "0x1f" is mmrx=15 { local a:2 = 0x1f; export *[data]:2 a; }
 mmry_r: "AR0" is mmry=0 { export AR0; }
 mmry_r: "AR1" is mmry=1 { export AR1; }
 mmry_r: "AR2" is mmry=2 { export AR2; }
@@ -434,13 +427,6 @@ mmry_r: "AR5" is mmry=5 { export AR5; }
 mmry_r: "AR6" is mmry=6 { export AR6; }
 mmry_r: "AR7" is mmry=7 { export AR7; }
 mmry_r: "SP" is mmry=8 { export SP; }
-mmry_r: "BK" is mmry=9 { export BK; }
-mmry_r: "BRC" is mmry=10 { export BRC; }
-mmry_r: "RSA" is mmry=11 { export RSA; }
-mmry_r: "REA" is mmry=12 { export REA; }
-mmry_r: "PMST" is mmry=13 { export PMST; }
-mmry_r: "XPC" is mmry=14 { export XPC; }
-mmry_r: "0x1f" is mmry=15 { local a:2 = 0x1f; export *[data]:2 a; }
 
 # condition codes
 cond: "UNC" is cc8=0x00 { local c:1 = (1:1); export c; }

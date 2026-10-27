@@ -23,7 +23,7 @@ import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent / "tools"))
-from c54x_encodings import ENCODINGS, word_pattern, fields, cond8, cond4, CMPR_CC   # noqa: E402
+from c54x_encodings import ENCODINGS, word_pattern, fields, cond8, cond4, CMPR_CC, MVMM_REG   # noqa: E402
 
 _ENTRY = {(m, s): (w0, ext) for m, s, _syn, w0, ext, _page in ENCODINGS}
 _NEED = {"w": set(), "x": set()}    # token fields the constraints use: w<hi>_<lo> (instr), x<hi>_<lo> (ext)
@@ -348,12 +348,10 @@ for n in range(128):    # the other data-page-0 addresses (peripherals ...); 6 /
     if n not in MMR and n not in (6, 7):
         emit('mmr: "0x%02x" is ind=0 & mmr7=0x%02x { local a:2 = 0x%02x; export *[data]:2 a; }' % (n, n, n))
 emit('mmr: mmrS is mmrS { export mmrS; }')
-for fld, base in (("mmrx", 16), ("mmry", 16)):
-    for k in range(16):
-        if base + k in MMR:
-            emit('%s_r: "%s" is %s=%d { export %s; }' % (fld, MMR[base + k], fld, k, MMR[base + k]))
-        else:
-            emit('%s_r: "0x%x" is %s=%d { local a:2 = 0x%x; export *[data]:2 a; }' % (fld, base + k, fld, k, base + k))
+# MVMM operands: MMRX/MMRY 0-8 select AR0-AR7, SP (SPRU172C 4-116, "only nine operands are allowed"); 9-15 are undefined
+for fld in ("mmrx", "mmry"):
+    for k, n in enumerate(MVMM_REG):
+        emit('%s_r: "%s" is %s=%d { export %s; }' % (fld, n, fld, k, n))
 
 # condition codes (BC, CC, RC, XC): 8-bit field; names and valid combinations from tools/c54x_encodings.py
 # (SPRU172C 4-18 condition table, Appendix A)
