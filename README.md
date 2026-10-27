@@ -45,7 +45,8 @@ Status after the Ghidra-Rare verification (details and numbers: [GHIDRA-RARE.md]
 - Dual 16-bit mode (C16=1) of DADD/DSUB/DRSUB/DADST/DSADT/DSUBT: **fixed** (the C16=0 forms of DADST/DSADT/DSUBT had the wrong operand and are corrected).
 - Parallel ST||ADD/SUB/LD/MAC...: **fixed** (store of src << (ASM-16); ST||ADD/SUB use the other accumulator).
 - IDLE K encodings, BIO condition polarity, MAX/MIN carry, SUBC carry, indirect addressing of the MMR instructions: **fixed** (see GHIDRA-RARE.md).
-- **Remains**: 3-word 0x6Fxx forms (ADD/SUB/LD/STH/STL Smem,SHIFT) with a long-offset/absolute Smem do not decode when the offset word lies in 0x0C00-0x0FFF (cause not found in the SLEIGH decision tree); compatibility mode (CMPT=1, ARP updates) is not modelled; XPC-extended program space beyond 64K words is not modelled.
+- 3-word 0x6Fxx forms with a long-offset Smem: **fixed**.
+- **Remains**: compatibility mode (CMPT=1, ARP updates) is not modelled; XPC-extended program space beyond 64K words is not modelled.
 
 ## Install
 

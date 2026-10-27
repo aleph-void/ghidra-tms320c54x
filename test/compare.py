@@ -29,7 +29,7 @@ def num(m):
 
 def canon(t):
     t = t.strip()
-    if t == 'BAD' or t == '???' or t.startswith('(bad') or t == '':
+    if t.startswith('BAD') or t == '???' or t.startswith('(bad') or t == '':
         return None
     t = re.sub(r'\s*<[^>]*>', '', t).lower()
     parts = []
