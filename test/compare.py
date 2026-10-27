@@ -69,6 +69,8 @@ def canon(t):
             ops.pop()
         if mn in ('add', 'sub', 'and', 'or', 'xor', 'ld') and len(ops) == 3 and ops[0] in ACC and ops[0] == ops[2]:
             ops.pop()
+        if mn in ('stl', 'sth') and len(ops) == 3 and ops[1] == '0':
+            del ops[1]
         if mn in ('sfta', 'sftl') and len(ops) == 3 and ops[0] == ops[2]:
             ops.pop()
         if mn in ('neg', 'abs', 'cmpl', 'norm', 'rnd', 'macar', 'maca', 'masa', 'masar', 'ld') and len(ops) >= 2 \

@@ -718,7 +718,7 @@ SEM6F = {
     "stl": ':STL "%(d)s", %(t)s, %(m)s is %(pat)s ; %(t)s { local v:8 = %(d)s; local sh:1 = %(t)s; ashift(v, sh); %(m)s = v:2; }',
 }
 for sub, name, si, di in X6F:
-    for m, pat in (("SmemS", "(op8=0x6f & SmemS)"), ("SmemL", "(op8=0x6f ... & SmemL)")):
+    for m, pat in (("SmemS", "(op8=0x6f & (ind=0 | mod<12) & SmemS)"), ("SmemL", "((op8=0x6f & ind=1 & mod>=12) ... & SmemL)")):
         emit(SEM6F[name] % {"t": "x6f_%s_%d%d" % (name, si, di), "s": ACC[si], "d": ACC[di], "m": m, "pat": pat})
 
 

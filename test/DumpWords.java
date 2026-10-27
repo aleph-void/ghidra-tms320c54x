@@ -48,7 +48,7 @@ public class DumpWords extends GhidraScript {
 				text = ins.toString();
 			}
 			catch (Exception e) {
-				text = "BAD";
+				text = "BAD " + e;
 			}
 			out.printf("%d %d %s%n", i / slot, len, text);
 			if (pcode && ins != null) {
