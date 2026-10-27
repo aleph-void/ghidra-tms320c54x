@@ -1,3 +1,4 @@
 dist/
+*.sla
 *.sla.lock
 __pycache__/
