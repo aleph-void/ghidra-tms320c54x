@@ -113,6 +113,10 @@ def explain(gt, mt, w0, cc8, cc4):
         return 'BANZ[D] with direct addressing: the manual allows only Sind (indirect), objdump accepts it'
     if mn in MMR_FAMILY and (w0 & 0x80):
         return 'objdump reads the I bit and mode bits as an MMR address; SPRU172C: I=1 is indirect addressing (page 0)'
+    if mn == 'mvmm' and not g_ok and ((w0 >> 4) & 0xf > 8 or w0 & 0xf > 8):
+        return 'MVMM register field 9-15 is not defined (SPRU172C MVMM: AR0-AR7, SP only; gas rejects them)'
+    if mn == 'estop' and not g_ok:
+        return 'ESTOP (F4F0) is not in the TI manuals (objdump only)'
     if mn == 'idle' and (w0 >> 8) & 3 == 3 and not g_ok:
         return 'IDLE with NN=11 is not defined (SPRU172C IDLE)'
     return None
