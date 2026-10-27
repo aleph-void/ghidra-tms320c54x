@@ -23,22 +23,6 @@ define context contextreg
 ;
 
 define token instr(16)
-  op16 = (0,15)
-  op13 = (3,15)
-  op12 = (4,15)
-  op11 = (5,15)
-  op10 = (6,15)
-  op8  = (8,15)
-  op7  = (9,15)
-  op6  = (10,15)
-  op6b = (0,5)
-  b7_0 = (0,7)
-  lo8  = (0,7)
-  b5_4 = (4,5)
-  nib1 = (4,7)
-  b7_5 = (5,7)
-  b7_3 = (3,7)
-  b8   = (8,8)
   ind  = (7,7)
   mod  = (3,6)
   arf  = (0,2)
@@ -62,29 +46,35 @@ define token instr(16)
   cc8  = (0,7)
   cc4  = (0,3)
   cc3  = (8,9)
-  nbit = (9,9)
-  sbit = (0,3)
   xcn  = (9,9)
   mmrx = (4,7)
   mmry = (0,3)
-  idlek = (8,9)
   bitc = (0,3)
   xpage = (0,6)
+  w15_10 = (10,15)
+  w15_9 = (9,15)
+  w15_8 = (8,15)
+  w15_7 = (7,15)
+  w15_5 = (5,15)
+  w15_3 = (3,15)
+  w15_0 = (0,15)
+  w8_8 = (8,8)
+  w7_5 = (5,7)
+  w7_4 = (4,7)
+  w7_3 = (3,7)
+  w7_0 = (0,7)
 ;
 
 define token ext(16)
   ext16  = (0,15)
   ext16s = (0,15) signed
-  e_top6 = (10,15)
-  e_src  = (9,9)
-  e_dst  = (8,8)
-  e_sub  = (5,7)
   e_shift = (0,4) signed
+  x15_5 = (5,15)
 ;
 
 attach variables [ arf ] [ AR0 AR1 AR2 AR3 AR4 AR5 AR6 AR7 ];
 attach variables [ xar yar ] [ AR2 AR3 AR4 AR5 ];
-attach variables [ src9 dst8 src1 e_src e_dst ] [ A B ];
+attach variables [ src9 dst8 src1 ] [ A B ];
 
 define pcodeop firs;
 define pcodeop lms;
@@ -98,7 +88,6 @@ define pcodeop saturate;
 define pcodeop idle;
 define pcodeop softwareInterrupt;
 define pcodeop softwareReset;
-define pcodeop emulationStop;
 define pcodeop dataDelay;
 define pcodeop compareSelect;
 define pcodeop setStatusField;
@@ -521,397 +510,396 @@ cond: "BNEQ, BOV" is cc8=0x7c { local c:1 = (B != 0) && (OVB != 0); OVB = 0; exp
 cond: "BEQ, BOV" is cc8=0x7d { local c:1 = (B == 0) && (OVB != 0); OVB = 0; export c; }
 cond: "BGT, BOV" is cc8=0x7e { local c:1 = (B s> 0) && (OVB != 0); OVB = 0; export c; }
 cond: "BLEQ, BOV" is cc8=0x7f { local c:1 = (B s<= 0) && (OVB != 0); OVB = 0; export c; }
-cond4: "AEQ" is cc4=5 { local c:1 = A == 0; export c; }
-cond4: "ANEQ" is cc4=4 { local c:1 = A != 0; export c; }
-cond4: "AGT" is cc4=6 { local c:1 = A s> 0; export c; }
-cond4: "ALT" is cc4=3 { local c:1 = A s< 0; export c; }
-cond4: "ALEQ" is cc4=7 { local c:1 = A s<= 0; export c; }
 cond4: "AGEQ" is cc4=2 { local c:1 = A s>= 0; export c; }
-cond4: "BEQ" is cc4=13 { local c:1 = B == 0; export c; }
-cond4: "BNEQ" is cc4=12 { local c:1 = B != 0; export c; }
-cond4: "BGT" is cc4=14 { local c:1 = B s> 0; export c; }
-cond4: "BLT" is cc4=11 { local c:1 = B s< 0; export c; }
-cond4: "BLEQ" is cc4=15 { local c:1 = B s<= 0; export c; }
+cond4: "ALT" is cc4=3 { local c:1 = A s< 0; export c; }
+cond4: "ANEQ" is cc4=4 { local c:1 = A != 0; export c; }
+cond4: "AEQ" is cc4=5 { local c:1 = A == 0; export c; }
+cond4: "AGT" is cc4=6 { local c:1 = A s> 0; export c; }
+cond4: "ALEQ" is cc4=7 { local c:1 = A s<= 0; export c; }
 cond4: "BGEQ" is cc4=10 { local c:1 = B s>= 0; export c; }
+cond4: "BLT" is cc4=11 { local c:1 = B s< 0; export c; }
+cond4: "BNEQ" is cc4=12 { local c:1 = B != 0; export c; }
+cond4: "BEQ" is cc4=13 { local c:1 = B == 0; export c; }
+cond4: "BGT" is cc4=14 { local c:1 = B s> 0; export c; }
+cond4: "BLEQ" is cc4=15 { local c:1 = B s<= 0; export c; }
 
 # SSBX / RSBX
-:SSBX "ST0,0" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=0 { setStatusField(0:1, 0:1); }
-:RSBX "ST0,0" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=0 { clearStatusField(0:1, 0:1); }
-:SSBX "ST0,1" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=1 { setStatusField(0:1, 1:1); }
-:RSBX "ST0,1" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=1 { clearStatusField(0:1, 1:1); }
-:SSBX "ST0,2" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=2 { setStatusField(0:1, 2:1); }
-:RSBX "ST0,2" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=2 { clearStatusField(0:1, 2:1); }
-:SSBX "ST0,3" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=3 { setStatusField(0:1, 3:1); }
-:RSBX "ST0,3" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=3 { clearStatusField(0:1, 3:1); }
-:SSBX "ST0,4" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=4 { setStatusField(0:1, 4:1); }
-:RSBX "ST0,4" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=4 { clearStatusField(0:1, 4:1); }
-:SSBX "ST0,5" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=5 { setStatusField(0:1, 5:1); }
-:RSBX "ST0,5" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=5 { clearStatusField(0:1, 5:1); }
-:SSBX "ST0,6" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=6 { setStatusField(0:1, 6:1); }
-:RSBX "ST0,6" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=6 { clearStatusField(0:1, 6:1); }
-:SSBX "ST0,7" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=7 { setStatusField(0:1, 7:1); }
-:RSBX "ST0,7" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=7 { clearStatusField(0:1, 7:1); }
-:SSBX "ST0,8" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=8 { setStatusField(0:1, 8:1); }
-:RSBX "ST0,8" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=8 { clearStatusField(0:1, 8:1); }
-:SSBX "OVB" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=9 { OVB = 1; }
-:RSBX "OVB" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=9 { OVB = 0; }
-:SSBX "OVA" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=10 { OVA = 1; }
-:RSBX "OVA" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=10 { OVA = 0; }
-:SSBX "C" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=11 { C = 1; }
-:RSBX "C" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=11 { C = 0; }
-:SSBX "TC" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=12 { TC = 1; }
-:RSBX "TC" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=12 { TC = 0; }
-:SSBX "ST0,13" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=13 { setStatusField(0:1, 13:1); }
-:RSBX "ST0,13" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=13 { clearStatusField(0:1, 13:1); }
-:SSBX "ST0,14" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=14 { setStatusField(0:1, 14:1); }
-:RSBX "ST0,14" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=14 { clearStatusField(0:1, 14:1); }
-:SSBX "ST0,15" is op6=0x3d & b8=1 & nib1=0xb & nbit=0 & sbit=15 { setStatusField(0:1, 15:1); }
-:RSBX "ST0,15" is op6=0x3d & b8=0 & nib1=0xb & nbit=0 & sbit=15 { clearStatusField(0:1, 15:1); }
-:SSBX "ST1,0" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=0 { setStatusField(1:1, 0:1); }
-:RSBX "ST1,0" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=0 { clearStatusField(1:1, 0:1); }
-:SSBX "ST1,1" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=1 { setStatusField(1:1, 1:1); }
-:RSBX "ST1,1" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=1 { clearStatusField(1:1, 1:1); }
-:SSBX "ST1,2" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=2 { setStatusField(1:1, 2:1); }
-:RSBX "ST1,2" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=2 { clearStatusField(1:1, 2:1); }
-:SSBX "ST1,3" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=3 { setStatusField(1:1, 3:1); }
-:RSBX "ST1,3" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=3 { clearStatusField(1:1, 3:1); }
-:SSBX "ST1,4" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=4 { setStatusField(1:1, 4:1); }
-:RSBX "ST1,4" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=4 { clearStatusField(1:1, 4:1); }
-:SSBX "CMPT" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=5 { CMPT = 1; }
-:RSBX "CMPT" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=5 { CMPT = 0; }
-:SSBX "FRCT" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=6 { FRCT = 1; }
-:RSBX "FRCT" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=6 { FRCT = 0; }
-:SSBX "C16" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=7 { C16 = 1; }
-:RSBX "C16" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=7 { C16 = 0; }
-:SSBX "SXM" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=8 { SXM = 1; }
-:RSBX "SXM" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=8 { SXM = 0; }
-:SSBX "OVM" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=9 { OVM = 1; }
-:RSBX "OVM" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=9 { OVM = 0; }
-:SSBX "ST1,10" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=10 { setStatusField(1:1, 10:1); }
-:RSBX "ST1,10" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=10 { clearStatusField(1:1, 10:1); }
-:SSBX "INTM" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=11 { INTM = 1; }
-:RSBX "INTM" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=11 { INTM = 0; }
-:SSBX "HM" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=12 { HM = 1; }
-:RSBX "HM" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=12 { HM = 0; }
-:SSBX "XF" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=13 { XF = 1; }
-:RSBX "XF" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=13 { XF = 0; }
-:SSBX "CPL" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=14 [ cplmode=1; globalset(inst_next, cplmode); ] { CPL = 1; }
-:RSBX "CPL" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=14 [ cplmode=0; globalset(inst_next, cplmode); ] { CPL = 0; }
-:SSBX "BRAF" is op6=0x3d & b8=1 & nib1=0xb & nbit=1 & sbit=15 { BRAF = 1; }
-:RSBX "BRAF" is op6=0x3d & b8=0 & nib1=0xb & nbit=1 & sbit=15 { BRAF = 0; }
+:SSBX "ST0,0" is w15_0=0xf5b0 { setStatusField(0:1, 0:1); }
+:RSBX "ST0,0" is w15_0=0xf4b0 { clearStatusField(0:1, 0:1); }
+:SSBX "ST0,1" is w15_0=0xf5b1 { setStatusField(0:1, 1:1); }
+:RSBX "ST0,1" is w15_0=0xf4b1 { clearStatusField(0:1, 1:1); }
+:SSBX "ST0,2" is w15_0=0xf5b2 { setStatusField(0:1, 2:1); }
+:RSBX "ST0,2" is w15_0=0xf4b2 { clearStatusField(0:1, 2:1); }
+:SSBX "ST0,3" is w15_0=0xf5b3 { setStatusField(0:1, 3:1); }
+:RSBX "ST0,3" is w15_0=0xf4b3 { clearStatusField(0:1, 3:1); }
+:SSBX "ST0,4" is w15_0=0xf5b4 { setStatusField(0:1, 4:1); }
+:RSBX "ST0,4" is w15_0=0xf4b4 { clearStatusField(0:1, 4:1); }
+:SSBX "ST0,5" is w15_0=0xf5b5 { setStatusField(0:1, 5:1); }
+:RSBX "ST0,5" is w15_0=0xf4b5 { clearStatusField(0:1, 5:1); }
+:SSBX "ST0,6" is w15_0=0xf5b6 { setStatusField(0:1, 6:1); }
+:RSBX "ST0,6" is w15_0=0xf4b6 { clearStatusField(0:1, 6:1); }
+:SSBX "ST0,7" is w15_0=0xf5b7 { setStatusField(0:1, 7:1); }
+:RSBX "ST0,7" is w15_0=0xf4b7 { clearStatusField(0:1, 7:1); }
+:SSBX "ST0,8" is w15_0=0xf5b8 { setStatusField(0:1, 8:1); }
+:RSBX "ST0,8" is w15_0=0xf4b8 { clearStatusField(0:1, 8:1); }
+:SSBX "OVB" is w15_0=0xf5b9 { OVB = 1; }
+:RSBX "OVB" is w15_0=0xf4b9 { OVB = 0; }
+:SSBX "OVA" is w15_0=0xf5ba { OVA = 1; }
+:RSBX "OVA" is w15_0=0xf4ba { OVA = 0; }
+:SSBX "C" is w15_0=0xf5bb { C = 1; }
+:RSBX "C" is w15_0=0xf4bb { C = 0; }
+:SSBX "TC" is w15_0=0xf5bc { TC = 1; }
+:RSBX "TC" is w15_0=0xf4bc { TC = 0; }
+:SSBX "ST0,13" is w15_0=0xf5bd { setStatusField(0:1, 13:1); }
+:RSBX "ST0,13" is w15_0=0xf4bd { clearStatusField(0:1, 13:1); }
+:SSBX "ST0,14" is w15_0=0xf5be { setStatusField(0:1, 14:1); }
+:RSBX "ST0,14" is w15_0=0xf4be { clearStatusField(0:1, 14:1); }
+:SSBX "ST0,15" is w15_0=0xf5bf { setStatusField(0:1, 15:1); }
+:RSBX "ST0,15" is w15_0=0xf4bf { clearStatusField(0:1, 15:1); }
+:SSBX "ST1,0" is w15_0=0xf7b0 { setStatusField(1:1, 0:1); }
+:RSBX "ST1,0" is w15_0=0xf6b0 { clearStatusField(1:1, 0:1); }
+:SSBX "ST1,1" is w15_0=0xf7b1 { setStatusField(1:1, 1:1); }
+:RSBX "ST1,1" is w15_0=0xf6b1 { clearStatusField(1:1, 1:1); }
+:SSBX "ST1,2" is w15_0=0xf7b2 { setStatusField(1:1, 2:1); }
+:RSBX "ST1,2" is w15_0=0xf6b2 { clearStatusField(1:1, 2:1); }
+:SSBX "ST1,3" is w15_0=0xf7b3 { setStatusField(1:1, 3:1); }
+:RSBX "ST1,3" is w15_0=0xf6b3 { clearStatusField(1:1, 3:1); }
+:SSBX "ST1,4" is w15_0=0xf7b4 { setStatusField(1:1, 4:1); }
+:RSBX "ST1,4" is w15_0=0xf6b4 { clearStatusField(1:1, 4:1); }
+:SSBX "CMPT" is w15_0=0xf7b5 { CMPT = 1; }
+:RSBX "CMPT" is w15_0=0xf6b5 { CMPT = 0; }
+:SSBX "FRCT" is w15_0=0xf7b6 { FRCT = 1; }
+:RSBX "FRCT" is w15_0=0xf6b6 { FRCT = 0; }
+:SSBX "C16" is w15_0=0xf7b7 { C16 = 1; }
+:RSBX "C16" is w15_0=0xf6b7 { C16 = 0; }
+:SSBX "SXM" is w15_0=0xf7b8 { SXM = 1; }
+:RSBX "SXM" is w15_0=0xf6b8 { SXM = 0; }
+:SSBX "OVM" is w15_0=0xf7b9 { OVM = 1; }
+:RSBX "OVM" is w15_0=0xf6b9 { OVM = 0; }
+:SSBX "ST1,10" is w15_0=0xf7ba { setStatusField(1:1, 10:1); }
+:RSBX "ST1,10" is w15_0=0xf6ba { clearStatusField(1:1, 10:1); }
+:SSBX "INTM" is w15_0=0xf7bb { INTM = 1; }
+:RSBX "INTM" is w15_0=0xf6bb { INTM = 0; }
+:SSBX "HM" is w15_0=0xf7bc { HM = 1; }
+:RSBX "HM" is w15_0=0xf6bc { HM = 0; }
+:SSBX "XF" is w15_0=0xf7bd { XF = 1; }
+:RSBX "XF" is w15_0=0xf6bd { XF = 0; }
+:SSBX "CPL" is w15_0=0xf7be [ cplmode=1; globalset(inst_next, cplmode); ] { CPL = 1; }
+:RSBX "CPL" is w15_0=0xf6be [ cplmode=0; globalset(inst_next, cplmode); ] { CPL = 0; }
+:SSBX "BRAF" is w15_0=0xf7bf { BRAF = 1; }
+:RSBX "BRAF" is w15_0=0xf6bf { BRAF = 0; }
 
 # RND operand of the LD||MAC family: the accumulator opposite to dst
 rnd: "B" is dst8=0 { export B; }
 rnd: "A" is dst8=1 { export A; }
 
-# CMPR condition
-cmprc: "EQ"  is cc3=0 & arf { local c:1 = arf == AR0; export c; }
-cmprc: "LT"  is cc3=1 & arf { local c:1 = arf < AR0; export c; }
-cmprc: "GT"  is cc3=2 & arf { local c:1 = arf > AR0; export c; }
+# CMPR condition (CC field, SPRU172C 4-34; unsigned compare)
+cmprc: "EQ" is cc3=0 & arf { local c:1 = arf == AR0; export c; }
+cmprc: "LT" is cc3=1 & arf { local c:1 = arf < AR0; export c; }
+cmprc: "GT" is cc3=2 & arf { local c:1 = arf > AR0; export c; }
 cmprc: "NEQ" is cc3=3 & arf { local c:1 = arf != AR0; export c; }
 
 macro mul16(r, x, y) { r = sext(x) * sext(y); r = r << zext(FRCT); }
 macro tshift(s) { s = (T:1 << 2) s>> 2; }
 
 # ---- loads and stores ----
-:LD Smem, dst8 is (op7=0x08 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); dst8 = _x_Smem; }                          # 1000/FE00
-:LD Smem, "TS", dst8^ovd is (ovd & op7=0x0a & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local v:8 = _x_Smem; local s:1 = 0; tshift(s); ashift(v, s); local _r1:8 = v; finish(dst8, _r1, ovd); }  # 1400
-:LD Smem, "16", dst8^ovd is (ovd & op7=0x22 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _r1:8 = _x_Smem << 16; finish(dst8, _r1, ovd); }        # 4400
-:LD Xmem, shft4, dst8^ovd is ovd & op7=0x4a & dst8 & shft4 & Xmem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _r1:8 = _x_Xmem << shft4; finish(dst8, _r1, ovd); }     # 9400
-:LD lk, shft4, dst8^ovd is (ovd & op7=0x78 & dst8 & nib1=2 & shft4) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _r1:8 = _x_lk << shft4; finish(dst8, _r1, ovd); }  # F020/FEF0
-:LD lk, "16", dst8^ovd is (ovd & op7=0x78 & dst8 & lo8=0x62) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _r1:8 = _x_lk << 16; finish(dst8, _r1, ovd); }          # F062/FEFF
-:LD "#"^k8u, dst8 is op7=0x74 & dst8 & k8u { dst8 = k8u; }                                 # E800/FE00
-:LD "#"^k5s, "ASM" is op11=0x768 & k5s { ASM = k5s; }                                  # ED00/FFE0
-:LD "#"^k3, "ARP" is op13=0x1e94 & k3 { ARP = k3; }                                   # F4A0/FFF8
-:LD "#"^k9, "DP" is op7=0x75 & k9 { DP = k9; }                                    # EA00/FE00
-:LD Smem, "T" is (op8=0x30) ... & Smem { T = Smem; }                                   # 3000
-:LD Smem, "DP" is (op8=0x46) ... & Smem { DP = Smem & 0x1ff; }                          # 4600
-:LD Smem, "ASM" is (op8=0x32) ... & Smem { local v:2 = Smem; local w:2 = (v << 11) s>> 11; ASM = w:1; }                        # 3200
-:LD src9, "ASM", dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x82 { local v:8 = src9; local s:1 = ASM; ashift(v, s); local _r1:8 = v; finish(dst8, _r1, ovd); }  # F482
-:LD src9, shift5, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & b7_5=2 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); local _r1:8 = v; finish(dst8, _r1, ovd); }  # F440/FCE0
-:LDU Smem, dst8 is (op7=0x09 & dst8) ... & Smem { dst8 = zext(Smem); }                          # 1200
-:LDR Smem, dst8^ovd is (ovd & op7=0x0b & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _r1:8 = (_x_Smem << 16) + 0x8000; finish(dst8, _r1, ovd); }  # 1600
-:LDM mmr, dst8 is (op7=0x24 & dst8) & mmr { dst8 = zext(mmr); }                           # 4800
-:DLD Lmem, dst8 is (op7=0x2b & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); dst8 = _x_Lmem; }                          # 5600
+:LD Smem, dst8 is (w15_9=0x8 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); dst8 = _x_Smem; }
+:LD Smem, "TS", dst8^ovd is (ovd & w15_9=0xa & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local v:8 = _x_Smem; local s:1 = 0; tshift(s); ashift(v, s); local _r1:8 = v; finish(dst8, _r1, ovd); }
+:LD Smem, "16", dst8^ovd is (ovd & w15_9=0x22 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _r1:8 = _x_Smem << 16; finish(dst8, _r1, ovd); }
+:LD Xmem, shft4, dst8^ovd is ovd & w15_9=0x4a & dst8 & shft4 & Xmem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _r1:8 = _x_Xmem << shft4; finish(dst8, _r1, ovd); }
+:LD lk, shft4, dst8^ovd is (ovd & w15_9=0x78 & w7_4=0x2 & dst8 & shft4) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _r1:8 = _x_lk << shft4; finish(dst8, _r1, ovd); }
+:LD lk, "16", dst8^ovd is (ovd & w15_9=0x78 & w7_0=0x62 & dst8) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _r1:8 = _x_lk << 16; finish(dst8, _r1, ovd); }
+:LD "#"^k8u, dst8 is w15_9=0x74 & dst8 & k8u { dst8 = k8u; }
+:LD "#"^k5s, "ASM" is w15_5=0x768 & k5s { ASM = k5s; }
+:LD "#"^k3, "ARP" is w15_3=0x1e94 & k3 { ARP = k3; }
+:LD "#"^k9, "DP" is w15_9=0x75 & k9 { DP = k9; }
+:LD Smem, "T" is (w15_8=0x30) ... & Smem { T = Smem; }
+:LD Smem, "DP" is (w15_8=0x46) ... & Smem { DP = Smem & 0x1ff; }
+:LD Smem, "ASM" is (w15_8=0x32) ... & Smem { local v:2 = Smem; local w:2 = (v << 11) s>> 11; ASM = w:1; }
+:LD src9, "ASM", dst8^ovd is ovd & w15_10=0x3d & w7_0=0x82 & src9 & dst8 { local v:8 = src9; local s:1 = ASM; ashift(v, s); local _r1:8 = v; finish(dst8, _r1, ovd); }
+:LD src9, shift5, dst8^ovd is ovd & w15_10=0x3d & w7_5=0x2 & src9 & dst8 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); local _r1:8 = v; finish(dst8, _r1, ovd); }
+:LDU Smem, dst8 is (w15_9=0x9 & dst8) ... & Smem { dst8 = zext(Smem); }
+:LDR Smem, dst8^ovd is (ovd & w15_9=0xb & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _r1:8 = (_x_Smem << 16) + 0x8000; finish(dst8, _r1, ovd); }
+:LDM mmr, dst8 is (w15_9=0x24 & dst8) & mmr { dst8 = zext(mmr); }
+:DLD Lmem, dst8 is (w15_9=0x2b & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); dst8 = _x_Lmem; }
 
-:ST "T", Smem is (op8=0x8c) ... & Smem { Smem = T; }                                   # 8C00
-:ST "TRN", Smem is (op8=0x8d) ... & Smem { Smem = TRN; }                                 # 8D00
-:ST lk, Smem is ((op8=0x76) ... & Smem) ; lk { Smem = lk; }                                  # 7600
-:STH src1, Smem is (op7=0x41 & src1) ... & Smem { Smem = src1(2); }                             # 8200
-:STH src1, "ASM", Smem is (op7=0x43 & src1) ... & Smem { local v:8 = src1; local s:1 = ASM; ashift(v, s); Smem = v(2); }  # 8600
-:STH src1, shft4, Xmem is op7=0x4d & src1 & shft4 & Xmem { local v:8 = src1 << shft4; Xmem = v(2); }     # 9A00
-:STL src1, Smem is (op7=0x40 & src1) ... & Smem { Smem = src1:2; }                              # 8000
-:STL src1, "ASM", Smem is (op7=0x42 & src1) ... & Smem { local v:8 = src1; local s:1 = ASM; ashift(v, s); Smem = v:2; }  # 8400
-:STL src1, shft4, Xmem is op7=0x4c & src1 & shft4 & Xmem { local v:8 = src1 << shft4; Xmem = v:2; }      # 9800
-:STLM src1, mmr is (op7=0x44 & src1) & mmr { mmr = src1:2; }                               # 8800
-:STM lk, mmr is (op8=0x77 & mmr) ; lk { mmr = lk; }                                   # 7700
-:DST src1, Lmem is (op7=0x27 & src1) ... & Lmem { Lmem = src1:4; }                              # 4E00
+:ST "T", Smem is (w15_8=0x8c) ... & Smem { Smem = T; }
+:ST "TRN", Smem is (w15_8=0x8d) ... & Smem { Smem = TRN; }
+:ST lk, Smem is ((w15_8=0x76) ... & Smem) ; lk { Smem = lk; }
+:STH src1, Smem is (w15_9=0x41 & src1) ... & Smem { Smem = src1(2); }
+:STH src1, "ASM", Smem is (w15_9=0x43 & src1) ... & Smem { local v:8 = src1; local s:1 = ASM; ashift(v, s); Smem = v(2); }
+:STH src1, shft4, Xmem is w15_9=0x4d & src1 & shft4 & Xmem { local v:8 = src1 << shft4; Xmem = v(2); }
+:STL src1, Smem is (w15_9=0x40 & src1) ... & Smem { Smem = src1:2; }
+:STL src1, "ASM", Smem is (w15_9=0x42 & src1) ... & Smem { local v:8 = src1; local s:1 = ASM; ashift(v, s); Smem = v:2; }
+:STL src1, shft4, Xmem is w15_9=0x4c & src1 & shft4 & Xmem { local v:8 = src1 << shft4; Xmem = v:2; }
+:STLM src1, mmr is (w15_9=0x44 & src1) & mmr { mmr = src1:2; }
+:STM lk, mmr is (w15_8=0x77 & mmr) ; lk { mmr = lk; }
+:DST src1, Lmem is (w15_9=0x27 & src1) ... & Lmem { Lmem = src1:4; }
 
 # ---- moves ----
-:MVDD Xmem, Ymem is op8=0xe5 & Xmem & Ymem { Ymem = Xmem; }                                # E500
-:MVDK Smem, dmad is ((op8=0x71) ... & Smem) ; dmad { dmad = Smem; }                                # 7100
-:MVDM dmad, mmr is (op8=0x72 & mmr) ; dmad { mmr = dmad; }                                 # 7200
-:MVDP Smem, pmad is ((op8=0x7d) ... & Smem) ; pmad { pmad = Smem; }                                # 7D00
-:MVKD dmad, Smem is ((op8=0x70) ... & Smem) ; dmad { Smem = dmad; }                                # 7000
-:MVMD mmr, dmad is (op8=0x73 & mmr) ; dmad { dmad = mmr; }                                 # 7300
-:MVMM mmrx_r, mmry_r is op8=0xe7 & mmrx_r & mmry_r { mmry_r = mmrx_r; }                            # E700
-:MVPD pmad, Smem is ((op8=0x7c) ... & Smem) ; pmad { Smem = pmad; }                                # 7C00
-:READA Smem is (op8=0x7e) ... & Smem { local a:2 = A:2; Smem = *[prog]:2 a; }        # 7E00
-:WRITA Smem is (op8=0x7f) ... & Smem { local a:2 = A:2; *[prog]:2 a = Smem; }        # 7F00
-:PORTR pa, Smem is ((op8=0x74) ... & Smem) ; pa { Smem = pa; }                                  # 7400
-:PORTW Smem, pa is ((op8=0x75) ... & Smem) ; pa { pa = Smem; }                                  # 7500
-:PSHD Smem is (op8=0x4b) ... & Smem { push(Smem); }                                 # 4B00
-:PSHM mmr is op8=0x4a & mmr { push(mmr); }                                  # 4A00
-:POPD Smem is (op8=0x8b) ... & Smem { local v:2 = 0; pop(v); Smem = v; }            # 8B00
-:POPM mmr is op8=0x8a & mmr { local v:2 = 0; pop(v); mmr = v; }             # 8A00
+:MVDD Xmem, Ymem is w15_8=0xe5 & Xmem & Ymem { Ymem = Xmem; }
+:MVDK Smem, dmad is ((w15_8=0x71) ... & Smem) ; dmad { dmad = Smem; }
+:MVDM dmad, mmr is (w15_8=0x72 & mmr) ; dmad { mmr = dmad; }
+:MVDP Smem, pmad is ((w15_8=0x7d) ... & Smem) ; pmad { pmad = Smem; }
+:MVKD dmad, Smem is ((w15_8=0x70) ... & Smem) ; dmad { Smem = dmad; }
+:MVMD mmr, dmad is (w15_8=0x73 & mmr) ; dmad { dmad = mmr; }
+:MVMM mmrx_r, mmry_r is w15_8=0xe7 & mmrx_r & mmry_r { mmry_r = mmrx_r; }
+:MVPD pmad, Smem is ((w15_8=0x7c) ... & Smem) ; pmad { Smem = pmad; }
+:READA Smem is (w15_8=0x7e) ... & Smem { local a:2 = A:2; Smem = *[prog]:2 a; }
+:WRITA Smem is (w15_8=0x7f) ... & Smem { local a:2 = A:2; *[prog]:2 a = Smem; }
+:PORTR pa, Smem is ((w15_8=0x74) ... & Smem) ; pa { Smem = pa; }
+:PORTW Smem, pa is ((w15_8=0x75) ... & Smem) ; pa { pa = Smem; }
+:PSHD Smem is (w15_8=0x4b) ... & Smem { push(Smem); }
+:PSHM mmr is w15_8=0x4a & mmr { push(mmr); }
+:POPD Smem is (w15_8=0x8b) ... & Smem { local v:2 = 0; pop(v); Smem = v; }
+:POPM mmr is w15_8=0x8a & mmr { local v:2 = 0; pop(v); mmr = v; }
 # ST0 / ST1 with direct addressing (the indirect forms address data memory 0x06 / 0x07, which is not aliased)
-:PSHM "ST0" is op8=0x4a & ind=0 & mmr7=6 { local v:2 = 0; st0_get(v); push(v); }
-:PSHM "ST1" is op8=0x4a & ind=0 & mmr7=7 { local v:2 = 0; st1_get(v); push(v); }
-:POPM "ST0" is op8=0x8a & ind=0 & mmr7=6 { local v:2 = 0; pop(v); st0_set(v); }
-:POPM "ST1" is op8=0x8a & ind=0 & mmr7=7 { local v:2 = 0; pop(v); st1_set(v); }
-:LDM "ST0", dst8 is op7=0x24 & dst8 & ind=0 & mmr7=6 { local v:2 = 0; st0_get(v); dst8 = zext(v); }
-:LDM "ST1", dst8 is op7=0x24 & dst8 & ind=0 & mmr7=7 { local v:2 = 0; st1_get(v); dst8 = zext(v); }
-:STLM src1, "ST0" is op7=0x44 & src1 & ind=0 & mmr7=6 { local v:2 = src1:2; st0_set(v); }
-:STLM src1, "ST1" is op7=0x44 & src1 & ind=0 & mmr7=7 { local v:2 = src1:2; st1_set(v); }
-:STM lk, "ST0" is (op8=0x77 & ind=0 & mmr7=6) ; lk { local v:2 = lk; st0_set(v); }
-:STM lk, "ST1" is (op8=0x77 & ind=0 & mmr7=7) ; lk { local v:2 = lk; st1_set(v); }
-:MVDM dmad, "ST0" is (op8=0x72 & ind=0 & mmr7=6) ; dmad { local v:2 = dmad; st0_set(v); }
-:MVDM dmad, "ST1" is (op8=0x72 & ind=0 & mmr7=7) ; dmad { local v:2 = dmad; st1_set(v); }
-:MVMD "ST0", dmad is (op8=0x73 & ind=0 & mmr7=6) ; dmad { local v:2 = 0; st0_get(v); dmad = v; }
-:MVMD "ST1", dmad is (op8=0x73 & ind=0 & mmr7=7) ; dmad { local v:2 = 0; st1_get(v); dmad = v; }
-:MAR Smem is (op8=0x6d) ... & Smem { build Smem; }                                  # 6D00 (address update only)
-:DELAY Smem is (op8=0x4d) ... & Smem { dataDelay(Smem); }                            # 4D00
-:LTD Smem is (op8=0x4c) ... & Smem { T = Smem; dataDelay(Smem); }                  # 4C00
-:FRAME k8s is op8=0xee & k8s { SP = SP + k8s; }                              # EE00
+:PSHM "ST0" is w15_8=0x4a & ind=0 & mmr7=6 { local v:2 = 0; st0_get(v); push(v); }
+:PSHM "ST1" is w15_8=0x4a & ind=0 & mmr7=7 { local v:2 = 0; st1_get(v); push(v); }
+:POPM "ST0" is w15_8=0x8a & ind=0 & mmr7=6 { local v:2 = 0; pop(v); st0_set(v); }
+:POPM "ST1" is w15_8=0x8a & ind=0 & mmr7=7 { local v:2 = 0; pop(v); st1_set(v); }
+:LDM "ST0", dst8 is w15_9=0x24 & dst8 & ind=0 & mmr7=6 { local v:2 = 0; st0_get(v); dst8 = zext(v); }
+:LDM "ST1", dst8 is w15_9=0x24 & dst8 & ind=0 & mmr7=7 { local v:2 = 0; st1_get(v); dst8 = zext(v); }
+:STLM src1, "ST0" is w15_9=0x44 & src1 & ind=0 & mmr7=6 { local v:2 = src1:2; st0_set(v); }
+:STLM src1, "ST1" is w15_9=0x44 & src1 & ind=0 & mmr7=7 { local v:2 = src1:2; st1_set(v); }
+:STM lk, "ST0" is (w15_8=0x77 & ind=0 & mmr7=6) ; lk { local v:2 = lk; st0_set(v); }
+:STM lk, "ST1" is (w15_8=0x77 & ind=0 & mmr7=7) ; lk { local v:2 = lk; st1_set(v); }
+:MVDM dmad, "ST0" is (w15_8=0x72 & ind=0 & mmr7=6) ; dmad { local v:2 = dmad; st0_set(v); }
+:MVDM dmad, "ST1" is (w15_8=0x72 & ind=0 & mmr7=7) ; dmad { local v:2 = dmad; st1_set(v); }
+:MVMD "ST0", dmad is (w15_8=0x73 & ind=0 & mmr7=6) ; dmad { local v:2 = 0; st0_get(v); dmad = v; }
+:MVMD "ST1", dmad is (w15_8=0x73 & ind=0 & mmr7=7) ; dmad { local v:2 = 0; st1_get(v); dmad = v; }
+:MAR Smem is (w15_8=0x6d) ... & Smem { build Smem; }  # (address update only)
+:DELAY Smem is (w15_8=0x4d) ... & Smem { dataDelay(Smem); }
+:LTD Smem is (w15_8=0x4c) ... & Smem { T = Smem; dataDelay(Smem); }
+:FRAME k8s is w15_8=0xee & k8s { SP = SP + k8s; }
 
 # ---- add / subtract ----
-:ADD Smem, src1^ovs1 is (ovs1 & op7=0x00 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src1; local _cy1:8 = _x_Smem; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(src1, _r1, ovs1); }       # 0000/FE00
-:ADD Smem, "TS", src1^ovs1 is (ovs1 & op7=0x02 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local v:8 = _x_Smem; local s:1 = 0; tshift(s); ashift(v, s); local _cx1:8 = src1; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(src1, _r1, ovs1); }  # 0400
-:ADD Smem, "16", src9, dst8^ovd is (ovd & op6=0x0f & src9 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src9; local _cy1:8 = (_x_Smem << 16); local _r1:8 = _cx1 + _cy1; caddk(_cx1, _cy1); finish(dst8, _r1, ovd); }  # 3C00/FC00
-:ADD Xmem, shft4, src1^ovs1 is ovs1 & op7=0x48 & src1 & shft4 & Xmem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _cx1:8 = src1; local _cy1:8 = (_x_Xmem << shft4); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(src1, _r1, ovs1); }  # 9000
-:ADD Xmem, Ymem, dst8^ovd is ovd & op7=0x50 & dst8 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local _cx1:8 = (_x_Xmem << 16); local _cy1:8 = (_x_Ymem << 16); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }  # A000
-:ADD lk, shft4, src9, dst8^ovd is (ovd & op6=0x3c & src9 & dst8 & nib1=0 & shft4) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << shft4); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F000/FCF0
-:ADD lk, "16", src9, dst8^ovd is (ovd & op6=0x3c & src9 & dst8 & lo8=0x60) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << 16); local _r1:8 = _cx1 + _cy1; caddk(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F060/FCFF
-:ADD src9, shift5, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & b7_5=0 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F400/FCE0
-:ADD src9, "ASM", dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x80 { local v:8 = src9; local s:1 = ASM; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F480
-:ADDC Smem, src1^ovs1 is (ovs1 & op7=0x03 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local ci:8 = zext(C); local r:8 = x + y + ci; C = (((x & 0xffffffff) + y + ci) >> 32) != 0; finish(src1, r, ovs1); }  # 0600
-:ADDS Smem, src1^ovs1 is (ovs1 & op7=0x01 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local r:8 = x + y; C = (((x & 0xffffffff) + y) >> 32) != 0; finish(src1, r, ovs1); }       # 0200
-:ADDM lk, Smem is ((op8=0x6b) ... & Smem) ; lk { Smem = Smem + lk; }                           # 6B00
-:DADD Lmem, src9, dst8^ovd is (ovd & op6=0x14 & src9 & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = src9; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = src9; local r:8 = x + y; cadd(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh + sh; local ll:8 = rl + sl; dst8 = (hh << 16) + (ll & 0xffff); <end> }     # 5000/FC00
-:DADST Lmem, dst8^ovd is (ovd & op7=0x2d & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = 0; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = tp; local r:8 = x + y; cadd(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh + tt; local ll:8 = rl - tt; dst8 = (hh << 16) + (ll & 0xffff); <end> }    # 5A00 (C16 dual mode approximated)
-:DRSUB Lmem, src1^ovs1 is (ovs1 & op7=0x2c & src1) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = src1; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = src1; local r:8 = x - y; csub(x, y); finish(src1, r, ovs1); goto <end>; <dual> local hh:8 = rh - sh; local ll:8 = rl - sl; src1 = (hh << 16) + (ll & 0xffff); <end> }       # 5800
-:DSADT Lmem, dst8^ovd is (ovd & op7=0x2f & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = 0; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = tp; local r:8 = x - y; csub(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh - tt; local ll:8 = rl + tt; dst8 = (hh << 16) + (ll & 0xffff); <end> }    # 5E00
-:DSUB Lmem, src1^ovs1 is (ovs1 & op7=0x2a & src1) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = src1; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = src1; local y:8 = _x_Lmem; local r:8 = x - y; csub(x, y); finish(src1, r, ovs1); goto <end>; <dual> local hh:8 = sh - rh; local ll:8 = sl - rl; src1 = (hh << 16) + (ll & 0xffff); <end> }       # 5400
-:DSUBT Lmem, dst8^ovd is (ovd & op7=0x2e & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = 0; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = tp; local r:8 = x - y; csub(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh - tt; local ll:8 = rl - tt; dst8 = (hh << 16) + (ll & 0xffff); <end> }    # 5C00
-:SUB Smem, src1^ovs1 is (ovs1 & op7=0x04 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src1; local _cy1:8 = _x_Smem; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(src1, _r1, ovs1); }       # 0800
-:SUB Smem, "TS", src1^ovs1 is (ovs1 & op7=0x06 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local v:8 = _x_Smem; local s:1 = 0; tshift(s); ashift(v, s); local _cx1:8 = src1; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(src1, _r1, ovs1); }  # 0C00
-:SUB Smem, "16", src9, dst8^ovd is (ovd & op6=0x10 & src9 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src9; local _cy1:8 = (_x_Smem << 16); local _r1:8 = _cx1 - _cy1; csubk(_cx1, _cy1); finish(dst8, _r1, ovd); }  # 4000/FC00
-:SUB Xmem, shft4, src1^ovs1 is ovs1 & op7=0x49 & src1 & shft4 & Xmem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _cx1:8 = src1; local _cy1:8 = (_x_Xmem << shft4); local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(src1, _r1, ovs1); }  # 9200
-:SUB Xmem, Ymem, dst8^ovd is ovd & op7=0x51 & dst8 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local _cx1:8 = (_x_Xmem << 16); local _cy1:8 = (_x_Ymem << 16); local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }  # A200
-:SUB lk, shft4, src9, dst8^ovd is (ovd & op6=0x3c & src9 & dst8 & nib1=1 & shft4) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << shft4); local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F010/FCF0
-:SUB lk, "16", src9, dst8^ovd is (ovd & op6=0x3c & src9 & dst8 & lo8=0x61) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << 16); local _r1:8 = _cx1 - _cy1; csubk(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F061/FCFF
-:SUB src9, shift5, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & b7_5=1 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F420/FCE0
-:SUB src9, "ASM", dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x81 { local v:8 = src9; local s:1 = ASM; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }  # F481
-:SUBB Smem, src1^ovs1 is (ovs1 & op7=0x07 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local bi:8 = zext(C == 0); local r:8 = x - y - bi; C = (x & 0xffffffff) >= (y + bi); finish(src1, r, ovs1); }  # 0E00
-:SUBC Smem, src1^ovs1 is (ovs1 & op7=0x0f & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local x:8 = src1; local d:8 = x - (_x_Smem << 15); local ge:8 = zext(d s>= 0); local rr:8 = (ge * ((d << 1) + 1)) + ((1 - ge) * (x << 1)); C = ge != 0; finish(src1, rr, ovs1); }  # 1E00 (division step)
-:SUBS Smem, src1^ovs1 is (ovs1 & op7=0x05 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local r:8 = x - y; C = (x & 0xffffffff) >= y; finish(src1, r, ovs1); }       # 0A00
+:ADD Smem, src1^ovs1 is (ovs1 & w15_9=0x0 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src1; local _cy1:8 = _x_Smem; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(src1, _r1, ovs1); }
+:ADD Smem, "TS", src1^ovs1 is (ovs1 & w15_9=0x2 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local v:8 = _x_Smem; local s:1 = 0; tshift(s); ashift(v, s); local _cx1:8 = src1; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(src1, _r1, ovs1); }
+:ADD Smem, "16", src9, dst8^ovd is (ovd & w15_10=0xf & src9 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src9; local _cy1:8 = (_x_Smem << 16); local _r1:8 = _cx1 + _cy1; caddk(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ADD Xmem, shft4, src1^ovs1 is ovs1 & w15_9=0x48 & src1 & shft4 & Xmem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _cx1:8 = src1; local _cy1:8 = (_x_Xmem << shft4); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(src1, _r1, ovs1); }
+:ADD Xmem, Ymem, dst8^ovd is ovd & w15_9=0x50 & dst8 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local _cx1:8 = (_x_Xmem << 16); local _cy1:8 = (_x_Ymem << 16); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ADD lk, shft4, src9, dst8^ovd is (ovd & w15_10=0x3c & w7_4=0x0 & src9 & dst8 & shft4) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << shft4); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ADD lk, "16", src9, dst8^ovd is (ovd & w15_10=0x3c & w7_0=0x60 & src9 & dst8) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << 16); local _r1:8 = _cx1 + _cy1; caddk(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ADD src9, shift5, dst8^ovd is ovd & w15_10=0x3d & w7_5=0x0 & src9 & dst8 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ADD src9, "ASM", dst8^ovd is ovd & w15_10=0x3d & w7_0=0x80 & src9 & dst8 { local v:8 = src9; local s:1 = ASM; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ADDC Smem, src1^ovs1 is (ovs1 & w15_9=0x3 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local ci:8 = zext(C); local r:8 = x + y + ci; C = (((x & 0xffffffff) + y + ci) >> 32) != 0; finish(src1, r, ovs1); }
+:ADDS Smem, src1^ovs1 is (ovs1 & w15_9=0x1 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local r:8 = x + y; C = (((x & 0xffffffff) + y) >> 32) != 0; finish(src1, r, ovs1); }
+:ADDM lk, Smem is ((w15_8=0x6b) ... & Smem) ; lk { Smem = Smem + lk; }
+:DADD Lmem, src9, dst8^ovd is (ovd & w15_10=0x14 & src9 & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = src9; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = src9; local r:8 = x + y; cadd(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh + sh; local ll:8 = rl + sl; dst8 = (hh << 16) + (ll & 0xffff); <end> }
+:DADST Lmem, dst8^ovd is (ovd & w15_9=0x2d & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = 0; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = tp; local r:8 = x + y; cadd(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh + tt; local ll:8 = rl - tt; dst8 = (hh << 16) + (ll & 0xffff); <end> }  # (C16 dual mode approximated)
+:DRSUB Lmem, src1^ovs1 is (ovs1 & w15_9=0x2c & src1) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = src1; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = src1; local r:8 = x - y; csub(x, y); finish(src1, r, ovs1); goto <end>; <dual> local hh:8 = rh - sh; local ll:8 = rl - sl; src1 = (hh << 16) + (ll & 0xffff); <end> }
+:DSADT Lmem, dst8^ovd is (ovd & w15_9=0x2f & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = 0; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = tp; local r:8 = x - y; csub(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh - tt; local ll:8 = rl + tt; dst8 = (hh << 16) + (ll & 0xffff); <end> }
+:DSUB Lmem, src1^ovs1 is (ovs1 & w15_9=0x2a & src1) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = src1; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = src1; local y:8 = _x_Lmem; local r:8 = x - y; csub(x, y); finish(src1, r, ovs1); goto <end>; <dual> local hh:8 = sh - rh; local ll:8 = sl - rl; src1 = (hh << 16) + (ll & 0xffff); <end> }
+:DSUBT Lmem, dst8^ovd is (ovd & w15_9=0x2e & dst8) ... & Lmem { local _x_Lmem:8 = 0; ldx32(_x_Lmem, Lmem); local t4:4 = zext(T); local tpair:4 = (t4 << 16) | t4; local tp:8 = 0; ldx32(tp, tpair); local raw:4 = Lmem; local rhh:2 = raw(2); local rh:8 = sext(rhh); local rll:2 = raw:2; local rl:8 = zext(rll); local tt:8 = sext(T); local sv:8 = 0; local shh:2 = sv(2); local sh:8 = sext(shh); local sll:2 = sv:2; local sl:8 = zext(sll); if (C16 != 0) goto <dual>; local x:8 = _x_Lmem; local y:8 = tp; local r:8 = x - y; csub(x, y); finish(dst8, r, ovd); goto <end>; <dual> local hh:8 = rh - tt; local ll:8 = rl - tt; dst8 = (hh << 16) + (ll & 0xffff); <end> }
+:SUB Smem, src1^ovs1 is (ovs1 & w15_9=0x4 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src1; local _cy1:8 = _x_Smem; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(src1, _r1, ovs1); }
+:SUB Smem, "TS", src1^ovs1 is (ovs1 & w15_9=0x6 & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local v:8 = _x_Smem; local s:1 = 0; tshift(s); ashift(v, s); local _cx1:8 = src1; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(src1, _r1, ovs1); }
+:SUB Smem, "16", src9, dst8^ovd is (ovd & w15_10=0x10 & src9 & dst8) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local _cx1:8 = src9; local _cy1:8 = (_x_Smem << 16); local _r1:8 = _cx1 - _cy1; csubk(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:SUB Xmem, shft4, src1^ovs1 is ovs1 & w15_9=0x49 & src1 & shft4 & Xmem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _cx1:8 = src1; local _cy1:8 = (_x_Xmem << shft4); local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(src1, _r1, ovs1); }
+:SUB Xmem, Ymem, dst8^ovd is ovd & w15_9=0x51 & dst8 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local _cx1:8 = (_x_Xmem << 16); local _cy1:8 = (_x_Ymem << 16); local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:SUB lk, shft4, src9, dst8^ovd is (ovd & w15_10=0x3c & w7_4=0x1 & src9 & dst8 & shft4) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << shft4); local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:SUB lk, "16", src9, dst8^ovd is (ovd & w15_10=0x3c & w7_0=0x61 & src9 & dst8) ; lk { local _x_lk:8 = 0; ldx(_x_lk, lk); local _cx1:8 = src9; local _cy1:8 = (_x_lk << 16); local _r1:8 = _cx1 - _cy1; csubk(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:SUB src9, shift5, dst8^ovd is ovd & w15_10=0x3d & w7_5=0x1 & src9 & dst8 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:SUB src9, "ASM", dst8^ovd is ovd & w15_10=0x3d & w7_0=0x81 & src9 & dst8 { local v:8 = src9; local s:1 = ASM; ashift(v, s); local _cx1:8 = dst8; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:SUBB Smem, src1^ovs1 is (ovs1 & w15_9=0x7 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local bi:8 = zext(C == 0); local r:8 = x - y - bi; C = (x & 0xffffffff) >= (y + bi); finish(src1, r, ovs1); }
+:SUBC Smem, src1^ovs1 is (ovs1 & w15_9=0xf & src1) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local x:8 = src1; local d:8 = x - (_x_Smem << 15); local ge:8 = zext(d s>= 0); local rr:8 = (ge * ((d << 1) + 1)) + ((1 - ge) * (x << 1)); C = ge != 0; finish(src1, rr, ovs1); }  # (division step)
+:SUBS Smem, src1^ovs1 is (ovs1 & w15_9=0x5 & src1) ... & Smem { local x:8 = src1; local y:8 = zext(Smem); local r:8 = x - y; C = (x & 0xffffffff) >= y; finish(src1, r, ovs1); }
 
 # ---- logic ----
-:AND Smem, src1 is (op7=0x0c & src1) ... & Smem { src1 = src1 & zext(Smem); }                   # 1800
-:AND lk, shft4, src9, dst8 is (op6=0x3c & src9 & dst8 & nib1=3 & shft4) ; lk { dst8 = src9 & (zext(lk) << shft4); }  # F030/FCF0
-:AND lk, "16", src9, dst8 is (op6=0x3c & src9 & dst8 & lo8=0x63) ; lk { dst8 = src9 & (zext(lk) << 16); }       # F063
-:AND src9, shift5, dst8 is op6=0x3c & src9 & dst8 & b7_5=4 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); dst8 = dst8 & v; }  # F080/FCE0
-:ANDM lk, Smem is ((op8=0x68) ... & Smem) ; lk { Smem = Smem & lk; }                           # 6800
-:OR Smem, src1 is (op7=0x0d & src1) ... & Smem { src1 = src1 | zext(Smem); }                   # 1A00
-:OR lk, shft4, src9, dst8 is (op6=0x3c & src9 & dst8 & nib1=4 & shft4) ; lk { dst8 = src9 | (zext(lk) << shft4); }  # F040/FCF0
-:OR lk, "16", src9, dst8 is (op6=0x3c & src9 & dst8 & lo8=0x64) ; lk { dst8 = src9 | (zext(lk) << 16); }        # F064
-:OR src9, shift5, dst8 is op6=0x3c & src9 & dst8 & b7_5=5 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); dst8 = dst8 | v; }  # F0A0/FCE0
-:ORM lk, Smem is ((op8=0x69) ... & Smem) ; lk { Smem = Smem | lk; }                           # 6900
-:XOR Smem, src1 is (op7=0x0e & src1) ... & Smem { src1 = src1 ^ zext(Smem); }                   # 1C00
-:XOR lk, shft4, src9, dst8 is (op6=0x3c & src9 & dst8 & nib1=5 & shft4) ; lk { dst8 = src9 ^ (zext(lk) << shft4); }  # F050/FCF0
-:XOR lk, "16", src9, dst8 is (op6=0x3c & src9 & dst8 & lo8=0x65) ; lk { dst8 = src9 ^ (zext(lk) << 16); }       # F065
-:XOR src9, shift5, dst8 is op6=0x3c & src9 & dst8 & b7_5=6 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); dst8 = dst8 ^ v; }  # F0C0/FCE0
-:XORM lk, Smem is ((op8=0x6a) ... & Smem) ; lk { Smem = Smem ^ lk; }                           # 6A00
-:CMPL src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x93 { local _r1:8 = ~src9; finish(dst8, _r1, ovd); }                   # F493
-:SFTA src9, shift5, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & b7_5=3 & shift5 { local x:8 = src9; local s1:1 = shift5; local s:8 = sext(s1); local r:8 = 0; local n:8 = 0 - s; if (s s< 0) goto <right>; local cc:8 = (x >> (39 - s)) & 1; C = cc != 0; r = x << s; goto <fin>; <right> local cc2:8 = (x >> (n - 1)) & 1; C = cc2 != 0; local xl:8 = x & 0xffffffffff; local sx8:8 = zext(SXM); r = (sx8 * (x s>> n)) + ((1 - sx8) * (xl >> n)); <fin> finish(dst8, r, ovd); }  # F460/FCE0
-:SFTL src9, shift5, dst8 is op6=0x3c & src9 & dst8 & b7_5=7 & shift5 { local x:8 = src9 & 0xffffffff; local s1:1 = shift5; local s:8 = sext(s1); local n:8 = 0 - s; local r:8 = x; local c0:1 = 0; C = c0; if (s s< 0) goto <right>; if (s == 0) goto <fin>; local cc:8 = (x >> (32 - s)) & 1; C = cc != 0; r = (x << s) & 0xffffffff; goto <fin>; <right> local cc2:8 = (x >> (n - 1)) & 1; C = cc2 != 0; r = x >> n; <fin> dst8 = r; }  # F0E0/FCE0
-:SFTC src1^ovs1 is ovs1 & op7=0x7a & src1 & lo8=0x94 { local t:8 = src1 ^ (src1 << 1); local go:1 = ((t & 0x80000000) == 0) && (src1 != 0); TC = go == 0; local _r1:8 = src1 << zext(go); finish(src1, _r1, ovs1); }  # F494
-:ROL src1 is op7=0x7a & src1 & lo8=0x91 { local cin:8 = zext(C); C = (src1 & 0x80000000) != 0; src1 = ((src1 << 1) | cin) & 0xffffffff; }  # F491
-:ROLTC src1 is op7=0x7a & src1 & lo8=0x92 { local cin:8 = zext(TC); C = (src1 & 0x80000000) != 0; src1 = ((src1 << 1) | cin) & 0xffffffff; }  # F492
-:ROR src1 is op7=0x7a & src1 & lo8=0x90 { local cin:8 = zext(C) << 31; C = (src1 & 1) != 0; src1 = ((src1 & 0xffffffff) >> 1) | cin; }  # F490
+:AND Smem, src1 is (w15_9=0xc & src1) ... & Smem { src1 = src1 & zext(Smem); }
+:AND lk, shft4, src9, dst8 is (w15_10=0x3c & w7_4=0x3 & src9 & dst8 & shft4) ; lk { dst8 = src9 & (zext(lk) << shft4); }
+:AND lk, "16", src9, dst8 is (w15_10=0x3c & w7_0=0x63 & src9 & dst8) ; lk { dst8 = src9 & (zext(lk) << 16); }
+:AND src9, shift5, dst8 is w15_10=0x3c & w7_5=0x4 & src9 & dst8 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); dst8 = dst8 & v; }
+:ANDM lk, Smem is ((w15_8=0x68) ... & Smem) ; lk { Smem = Smem & lk; }
+:OR Smem, src1 is (w15_9=0xd & src1) ... & Smem { src1 = src1 | zext(Smem); }
+:OR lk, shft4, src9, dst8 is (w15_10=0x3c & w7_4=0x4 & src9 & dst8 & shft4) ; lk { dst8 = src9 | (zext(lk) << shft4); }
+:OR lk, "16", src9, dst8 is (w15_10=0x3c & w7_0=0x64 & src9 & dst8) ; lk { dst8 = src9 | (zext(lk) << 16); }
+:OR src9, shift5, dst8 is w15_10=0x3c & w7_5=0x5 & src9 & dst8 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); dst8 = dst8 | v; }
+:ORM lk, Smem is ((w15_8=0x69) ... & Smem) ; lk { Smem = Smem | lk; }
+:XOR Smem, src1 is (w15_9=0xe & src1) ... & Smem { src1 = src1 ^ zext(Smem); }
+:XOR lk, shft4, src9, dst8 is (w15_10=0x3c & w7_4=0x5 & src9 & dst8 & shft4) ; lk { dst8 = src9 ^ (zext(lk) << shft4); }
+:XOR lk, "16", src9, dst8 is (w15_10=0x3c & w7_0=0x65 & src9 & dst8) ; lk { dst8 = src9 ^ (zext(lk) << 16); }
+:XOR src9, shift5, dst8 is w15_10=0x3c & w7_5=0x6 & src9 & dst8 & shift5 { local v:8 = src9; local s:1 = shift5; ashift(v, s); dst8 = dst8 ^ v; }
+:XORM lk, Smem is ((w15_8=0x6a) ... & Smem) ; lk { Smem = Smem ^ lk; }
+:CMPL src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x93 & src9 & dst8 { local _r1:8 = ~src9; finish(dst8, _r1, ovd); }
+:SFTA src9, shift5, dst8^ovd is ovd & w15_10=0x3d & w7_5=0x3 & src9 & dst8 & shift5 { local x:8 = src9; local s1:1 = shift5; local s:8 = sext(s1); local r:8 = 0; local n:8 = 0 - s; if (s s< 0) goto <right>; local cc:8 = (x >> (39 - s)) & 1; C = cc != 0; r = x << s; goto <fin>; <right> local cc2:8 = (x >> (n - 1)) & 1; C = cc2 != 0; local xl:8 = x & 0xffffffffff; local sx8:8 = zext(SXM); r = (sx8 * (x s>> n)) + ((1 - sx8) * (xl >> n)); <fin> finish(dst8, r, ovd); }
+:SFTL src9, shift5, dst8 is w15_10=0x3c & w7_5=0x7 & src9 & dst8 & shift5 { local x:8 = src9 & 0xffffffff; local s1:1 = shift5; local s:8 = sext(s1); local n:8 = 0 - s; local r:8 = x; local c0:1 = 0; C = c0; if (s s< 0) goto <right>; if (s == 0) goto <fin>; local cc:8 = (x >> (32 - s)) & 1; C = cc != 0; r = (x << s) & 0xffffffff; goto <fin>; <right> local cc2:8 = (x >> (n - 1)) & 1; C = cc2 != 0; r = x >> n; <fin> dst8 = r; }
+:SFTC src1^ovs1 is ovs1 & w15_9=0x7a & w7_0=0x94 & src1 { local t:8 = src1 ^ (src1 << 1); local go:1 = ((t & 0x80000000) == 0) && (src1 != 0); TC = go == 0; local _r1:8 = src1 << zext(go); finish(src1, _r1, ovs1); }
+:ROL src1 is w15_9=0x7a & w7_0=0x91 & src1 { local cin:8 = zext(C); C = (src1 & 0x80000000) != 0; src1 = ((src1 << 1) | cin) & 0xffffffff; }
+:ROLTC src1 is w15_9=0x7a & w7_0=0x92 & src1 { local cin:8 = zext(TC); C = (src1 & 0x80000000) != 0; src1 = ((src1 << 1) | cin) & 0xffffffff; }
+:ROR src1 is w15_9=0x7a & w7_0=0x90 & src1 { local cin:8 = zext(C) << 31; C = (src1 & 1) != 0; src1 = ((src1 & 0xffffffff) >> 1) | cin; }
 
 # ---- accumulator ops ----
-:ABS src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x85 { local x:8 = src9; local n:8 = zext(x s< 0); local r:8 = (n * (0 - x)) + ((1 - n) * x); C = r == 0; finish(dst8, r, ovd); }  # F485
-:NEG src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x84 { local x:8 = src9; local r:8 = 0 - x; C = x == 0; finish(dst8, r, ovd); ovd = ovd | (x == 0xffffffff80000000); }                   # F484
-:MAX dst8 is op7=0x7a & dst8 & lo8=0x86 { local b:1 = B s> A; C = b; local bb:8 = zext(b); dst8 = (bb * B) + ((1 - bb) * A); }  # F486
-:MIN dst8 is op7=0x7a & dst8 & lo8=0x87 { local b:1 = B s< A; C = b; local bb:8 = zext(b); dst8 = (bb * B) + ((1 - bb) * A); }  # F487
-:SAT src1^ovs1 is ovs1 & op7=0x7a & src1 & lo8=0x83 { local x:8 = src1; local w32:8 = (x << 32) s>> 32; local o:1 = w32 != x; local lim:8 = 0x7fffffff ^ (0 - zext(x s< 0)); local o8:8 = zext(o); src1 = (o8 * lim) + ((1 - o8) * x); ovs1 = o; }                      # F483
-:EXP src1 is op7=0x7a & src1 & lo8=0x8e { local x:8 = src1; local t:8 = (x ^ (x << 1)) & 0xffffffffff; local lz:8 = lzcount(t); local e:8 = lz - 32; local big:8 = zext(e s> 31); e = (big * 31) + ((1 - big) * e); local nz:8 = zext(x != 0); local tt:8 = e * nz; T = tt:2; }                         # F48E
-:NORM src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x8f { local v:8 = src9; local s:1 = 0; tshift(s); ashift(v, s); finish(dst8, v, ovd); }                  # F48F
-:RND src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x9f { local _r1:8 = src9 + 0x8000; finish(dst8, _r1, ovd); }           # F49F
+:ABS src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x85 & src9 & dst8 { local x:8 = src9; local n:8 = zext(x s< 0); local r:8 = (n * (0 - x)) + ((1 - n) * x); C = r == 0; finish(dst8, r, ovd); }
+:NEG src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x84 & src9 & dst8 { local x:8 = src9; local r:8 = 0 - x; C = x == 0; finish(dst8, r, ovd); ovd = ovd | (x == 0xffffffff80000000); }
+:MAX dst8 is w15_9=0x7a & w7_0=0x86 & dst8 { local b:1 = B s> A; C = b; local bb:8 = zext(b); dst8 = (bb * B) + ((1 - bb) * A); }
+:MIN dst8 is w15_9=0x7a & w7_0=0x87 & dst8 { local b:1 = B s< A; C = b; local bb:8 = zext(b); dst8 = (bb * B) + ((1 - bb) * A); }
+:SAT src1^ovs1 is ovs1 & w15_9=0x7a & w7_0=0x83 & src1 { local x:8 = src1; local w32:8 = (x << 32) s>> 32; local o:1 = w32 != x; local lim:8 = 0x7fffffff ^ (0 - zext(x s< 0)); local o8:8 = zext(o); src1 = (o8 * lim) + ((1 - o8) * x); ovs1 = o; }
+:EXP src1 is w15_9=0x7a & w7_0=0x8e & src1 { local x:8 = src1; local t:8 = (x ^ (x << 1)) & 0xffffffffff; local lz:8 = lzcount(t); local e:8 = lz - 32; local big:8 = zext(e s> 31); e = (big * 31) + ((1 - big) * e); local nz:8 = zext(x != 0); local tt:8 = e * nz; T = tt:2; }
+:NORM src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x8f & src9 & dst8 { local v:8 = src9; local s:1 = 0; tshift(s); ashift(v, s); finish(dst8, v, ovd); }
+:RND src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x9f & src9 & dst8 { local _r1:8 = src9 + 0x8000; finish(dst8, _r1, ovd); }
 
 # ---- multiply / MAC ----
-:MPY Smem, dst8 is (op7=0x10 & dst8) ... & Smem { mul16(dst8, T, Smem); }                       # 2000
-:MPYR Smem, dst8^ovd is (ovd & op7=0x11 & dst8) ... & Smem { mul16(dst8, T, Smem); local r:8 = (dst8 + 0x8000) & 0xffffffffffff0000; finish(dst8, r, ovd); } # 2200
-:MPYU Smem, dst8 is (op7=0x12 & dst8) ... & Smem { dst8 = zext(T) * zext(Smem); }                # 2400
-:MPY Xmem, Ymem, dst8 is op7=0x52 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; mul16(dst8, x, Ymem); }  # A400
-:MPY Smem, lks, dst8 is ((op7=0x31 & dst8) ... & Smem) ; lks { local x:2 = Smem; T = x; mul16(dst8, x, lks); }  # 6200
-:MPY lks, dst8 is (op7=0x78 & dst8 & lo8=0x66) ; lks { mul16(dst8, T, lks); }                      # F066
-:MPYA Smem is (op8=0x31) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); B = p; }  # 3100
-:MPYA dst8 is op7=0x7a & dst8 & lo8=0x8c { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); dst8 = p; }  # F48C
-:SQUR Smem, dst8 is (op7=0x13 & dst8) ... & Smem { local x:2 = Smem; T = x; mul16(dst8, x, x); } # 2600
-:SQUR "A", dst8 is op7=0x7a & dst8 & lo8=0x8d { local h:2 = A(2); mul16(dst8, h, h); }        # F48D
-:SQURA Smem, src1^ovs1 is (ovs1 & op7=0x1c & src1) ... & Smem { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, x); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }  # 3800
-:SQURS Smem, src1^ovs1 is (ovs1 & op7=0x1d & src1) ... & Smem { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, x); local _r1:8 = src1 - p; finish(src1, _r1, ovs1); }  # 3A00
-:MAC Smem, src1^ovs1 is (ovs1 & op7=0x14 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }  # 2800
-:MACR Smem, src1^ovs1 is (ovs1 & op7=0x15 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(src1, _r1, ovs1); }  # 2A00
-:MAC Xmem, Ymem, src9, dst8^ovd is ovd & op6=0x2c & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }  # B000
-:MACR Xmem, Ymem, src9, dst8^ovd is ovd & op6=0x2d & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }  # B400
-:MAC lks, src9, dst8^ovd is (ovd & op6=0x3c & src9 & dst8 & lo8=0x67) ; lks { local p:8 = 0; mul16(p, T, lks); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }  # F067
-:MAC Smem, lks, src9, dst8^ovd is ((ovd & op6=0x19 & src9 & dst8) ... & Smem) ; lks { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, lks); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }  # 6400
-:MACA "T", src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x88 { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }  # F488
-:MACA Smem is (op8=0x35) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); local _r1:8 = B + p; finish(B, _r1, OVB); }  # 3500
-:MACAR "T", src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x89 { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }  # F489
-:MACAR Smem is (op8=0x37) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); local _r1:8 = B + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(B, _r1, OVB); }  # 3700
-:MACD Smem, pmad, src1^ovs1 is ((ovs1 & op7=0x3d & src1) ... & Smem) ; pmad { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, pmad); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); dataDelay(x); }  # 7A00
-:MACP Smem, pmad, src1^ovs1 is ((ovs1 & op7=0x3c & src1) ... & Smem) ; pmad { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, pmad); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }  # 7800
-:MACSU Xmem, Ymem, src1^ovs1 is ovs1 & op7=0x53 & src1 & Xmem & Ymem { local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local x:2 = Xmem; T = x; local p:8 = zext(x) * _x_Ymem; local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }  # A600
-:MAS Smem, src1^ovs1 is (ovs1 & op7=0x16 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 - p; finish(src1, _r1, ovs1); }  # 2C00
-:MASR Smem, src1^ovs1 is (ovs1 & op7=0x17 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(src1, _r1, ovs1); }  # 2E00
-:MAS Xmem, Ymem, src9, dst8^ovd is ovd & op6=0x2e & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 - p; finish(dst8, _r1, ovd); }  # B800
-:MASR Xmem, Ymem, src9, dst8^ovd is ovd & op6=0x2f & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }  # BC00
-:MASA "T", src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x8a { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 - p; finish(dst8, _r1, ovd); }  # F48A
-:MASA Smem is (op8=0x33) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); local _r1:8 = B - p; finish(B, _r1, OVB); }  # 3300
-:MASAR "T", src9, dst8^ovd is ovd & op6=0x3d & src9 & dst8 & lo8=0x8b { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }  # F48B
-:POLY Smem is (op8=0x36) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local a17:8 = (((A >> 16) << 47) s>> 47); local p:8 = a17 * sext(T); p = p << zext(FRCT); local ra:8 = (B + p + 0x8000) & 0xffffffffffff0000; local x:8 = _x_Smem << 16; finish(A, ra, OVA); B = (x << 24) s>> 24; }                    # 3600
-:FIRS Xmem, Ymem, pmad is (op8=0xe0 & Xmem & Ymem) ; pmad { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local a17:8 = (((A >> 16) << 47) s>> 47); local c:2 = *[prog]:2 pmad; local p:8 = a17 * sext(c); p = p << zext(FRCT); local rb:8 = B + p; local ra:8 = (_x_Xmem + _x_Ymem) << 16; finish(B, rb, OVB); finish(A, ra, OVA); }           # E000
-:LMS Xmem, Ymem is op8=0xe1 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local xv:8 = _x_Xmem; local p:8 = xv * _x_Ymem; p = p << zext(FRCT); local ra:8 = (A + (xv << 16) + 0x8000) & 0xffffffffffff0000; local rb:8 = B + p; finish(A, ra, OVA); finish(B, rb, OVB); }                   # E100
-:SQDST Xmem, Ymem is op8=0xe2 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local a17:8 = (((A >> 16) << 47) s>> 47); local p:8 = a17 * a17; p = p << zext(FRCT); local dif:8 = (_x_Xmem - _x_Ymem) << 16; local r:8 = B + p; finish(B, r, OVB); finish(A, dif, OVA); }                    # E200
-:ABDST Xmem, Ymem is op8=0xe3 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local a17:8 = (((A >> 16) << 47) s>> 47); local ab:8 = (zext(a17 s< 0) * (0 - a17)) + (zext(a17 s>= 0) * a17); ab = ab << zext(FRCT); local dif:8 = (_x_Xmem - _x_Ymem) << 16; local r:8 = B + ab; finish(B, r, OVB); finish(A, dif, OVA); }                    # E300
+:MPY Smem, dst8 is (w15_9=0x10 & dst8) ... & Smem { mul16(dst8, T, Smem); }
+:MPYR Smem, dst8^ovd is (ovd & w15_9=0x11 & dst8) ... & Smem { mul16(dst8, T, Smem); local r:8 = (dst8 + 0x8000) & 0xffffffffffff0000; finish(dst8, r, ovd); }
+:MPYU Smem, dst8 is (w15_9=0x12 & dst8) ... & Smem { dst8 = zext(T) * zext(Smem); }
+:MPY Xmem, Ymem, dst8 is w15_9=0x52 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; mul16(dst8, x, Ymem); }
+:MPY Smem, lks, dst8 is ((w15_9=0x31 & dst8) ... & Smem) ; lks { local x:2 = Smem; T = x; mul16(dst8, x, lks); }
+:MPY lks, dst8 is (w15_9=0x78 & w7_0=0x66 & dst8) ; lks { mul16(dst8, T, lks); }
+:MPYA Smem is (w15_8=0x31) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); B = p; }
+:MPYA dst8 is w15_9=0x7a & w7_0=0x8c & dst8 { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); dst8 = p; }
+:SQUR Smem, dst8 is (w15_9=0x13 & dst8) ... & Smem { local x:2 = Smem; T = x; mul16(dst8, x, x); }
+:SQUR "A", dst8 is w15_9=0x7a & w7_0=0x8d & dst8 { local h:2 = A(2); mul16(dst8, h, h); }
+:SQURA Smem, src1^ovs1 is (ovs1 & w15_9=0x1c & src1) ... & Smem { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, x); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }
+:SQURS Smem, src1^ovs1 is (ovs1 & w15_9=0x1d & src1) ... & Smem { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, x); local _r1:8 = src1 - p; finish(src1, _r1, ovs1); }
+:MAC Smem, src1^ovs1 is (ovs1 & w15_9=0x14 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }
+:MACR Smem, src1^ovs1 is (ovs1 & w15_9=0x15 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(src1, _r1, ovs1); }
+:MAC Xmem, Ymem, src9, dst8^ovd is ovd & w15_10=0x2c & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }
+:MACR Xmem, Ymem, src9, dst8^ovd is ovd & w15_10=0x2d & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }
+:MAC lks, src9, dst8^ovd is (ovd & w15_10=0x3c & w7_0=0x67 & src9 & dst8) ; lks { local p:8 = 0; mul16(p, T, lks); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }
+:MAC Smem, lks, src9, dst8^ovd is ((ovd & w15_10=0x19 & src9 & dst8) ... & Smem) ; lks { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, lks); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }
+:MACA "T", src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x88 & src9 & dst8 { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 + p; finish(dst8, _r1, ovd); }
+:MACA Smem is (w15_8=0x35) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); local _r1:8 = B + p; finish(B, _r1, OVB); }
+:MACAR "T", src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x89 & src9 & dst8 { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }
+:MACAR Smem is (w15_8=0x37) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); local _r1:8 = B + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(B, _r1, OVB); }
+:MACD Smem, pmad, src1^ovs1 is ((ovs1 & w15_9=0x3d & src1) ... & Smem) ; pmad { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, pmad); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); dataDelay(x); }
+:MACP Smem, pmad, src1^ovs1 is ((ovs1 & w15_9=0x3c & src1) ... & Smem) ; pmad { local x:2 = Smem; T = x; local p:8 = 0; mul16(p, x, pmad); local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }
+:MACSU Xmem, Ymem, src1^ovs1 is ovs1 & w15_9=0x53 & src1 & Xmem & Ymem { local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local x:2 = Xmem; T = x; local p:8 = zext(x) * _x_Ymem; local _r1:8 = src1 + p; finish(src1, _r1, ovs1); }
+:MAS Smem, src1^ovs1 is (ovs1 & w15_9=0x16 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 - p; finish(src1, _r1, ovs1); }
+:MASR Smem, src1^ovs1 is (ovs1 & w15_9=0x17 & src1) ... & Smem { local p:8 = 0; mul16(p, T, Smem); local _r1:8 = src1 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(src1, _r1, ovs1); }
+:MAS Xmem, Ymem, src9, dst8^ovd is ovd & w15_10=0x2e & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 - p; finish(dst8, _r1, ovd); }
+:MASR Xmem, Ymem, src9, dst8^ovd is ovd & w15_10=0x2f & src9 & dst8 & Xmem & Ymem { local x:2 = Xmem; T = x; local p:8 = 0; mul16(p, x, Ymem); local _r1:8 = src9 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }
+:MASA "T", src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x8a & src9 & dst8 { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 - p; finish(dst8, _r1, ovd); }
+:MASA Smem is (w15_8=0x33) ... & Smem { local x:2 = Smem; T = x; local ah:2 = A(2); local p:8 = 0; mul16(p, x, ah); local _r1:8 = B - p; finish(B, _r1, OVB); }
+:MASAR "T", src9, dst8^ovd is ovd & w15_10=0x3d & w7_0=0x8b & src9 & dst8 { local ah:2 = A(2); local p:8 = 0; mul16(p, T, ah); local _r1:8 = src9 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }
+:POLY Smem is (w15_8=0x36) ... & Smem { local _x_Smem:8 = 0; ldx(_x_Smem, Smem); local a17:8 = (((A >> 16) << 47) s>> 47); local p:8 = a17 * sext(T); p = p << zext(FRCT); local ra:8 = (B + p + 0x8000) & 0xffffffffffff0000; local x:8 = _x_Smem << 16; finish(A, ra, OVA); B = (x << 24) s>> 24; }
+:FIRS Xmem, Ymem, pmad is (w15_8=0xe0 & Xmem & Ymem) ; pmad { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local a17:8 = (((A >> 16) << 47) s>> 47); local c:2 = *[prog]:2 pmad; local p:8 = a17 * sext(c); p = p << zext(FRCT); local rb:8 = B + p; local ra:8 = (_x_Xmem + _x_Ymem) << 16; finish(B, rb, OVB); finish(A, ra, OVA); }
+:LMS Xmem, Ymem is w15_8=0xe1 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local xv:8 = _x_Xmem; local p:8 = xv * _x_Ymem; p = p << zext(FRCT); local ra:8 = (A + (xv << 16) + 0x8000) & 0xffffffffffff0000; local rb:8 = B + p; finish(A, ra, OVA); finish(B, rb, OVB); }
+:SQDST Xmem, Ymem is w15_8=0xe2 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local a17:8 = (((A >> 16) << 47) s>> 47); local p:8 = a17 * a17; p = p << zext(FRCT); local dif:8 = (_x_Xmem - _x_Ymem) << 16; local r:8 = B + p; finish(B, r, OVB); finish(A, dif, OVA); }
+:ABDST Xmem, Ymem is w15_8=0xe3 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _x_Ymem:8 = 0; ldx(_x_Ymem, Ymem); local a17:8 = (((A >> 16) << 47) s>> 47); local ab:8 = (zext(a17 s< 0) * (0 - a17)) + (zext(a17 s>= 0) * a17); ab = ab << zext(FRCT); local dif:8 = (_x_Xmem - _x_Ymem) << 16; local r:8 = B + ab; finish(B, r, OVB); finish(A, dif, OVA); }
 
 # ---- compare / bit test ----
-:BIT Xmem, bitc is op8=0x96 & Xmem & bitc { local s:2 = 15 - bitc; TC = ((Xmem >> s) & 1) != 0; }  # 9600
-:BITF Smem, lk is ((op8=0x61) ... & Smem) ; lk { TC = (Smem & lk) != 0; }                      # 6100
-:BITT Smem is (op8=0x34) ... & Smem { local s:2 = 15 - (T & 0xf); TC = ((Smem >> s) & 1) != 0; }  # 3400
-:CMPM Smem, lks is ((op8=0x60) ... & Smem) ; lks { TC = Smem == lks; }                           # 6000
-:CMPR cmprc, arf is op6=0x3d & b7_3=0x15 & cmprc & arf { TC = cmprc; }                                # F4A8/FCF8
-:CMPS src1, Smem is (op7=0x47 & src1) ... & Smem { local x:8 = src1; local hi:2 = x(2); local lo:2 = x:2; local hgt:1 = hi s> lo; local m:2 = lo; if (!hgt) goto <takelo>; m = hi; <takelo> Smem = m; TRN = (TRN << 1) | zext(!hgt); TC = !hgt; }        # 8E00
-:SACCD src1, Xmem, cond4 is op7=0x4f & src1 & Xmem & cond4 { if (!cond4) goto <done>; Xmem = src1(2); <done> }  # 9E00
-:SRCCD Xmem, cond4 is op8=0x9d & Xmem & cond4 { if (!cond4) goto <done>; Xmem = BRC; <done> }  # 9D00
-:STRCD Xmem, cond4 is op8=0x9c & Xmem & cond4 { if (!cond4) goto <done>; Xmem = T; <done> }    # 9C00
+:BIT Xmem, bitc is w15_8=0x96 & Xmem & bitc { local s:2 = 15 - bitc; TC = ((Xmem >> s) & 1) != 0; }
+:BITF Smem, lk is ((w15_8=0x61) ... & Smem) ; lk { TC = (Smem & lk) != 0; }
+:BITT Smem is (w15_8=0x34) ... & Smem { local s:2 = 15 - (T & 0xf); TC = ((Smem >> s) & 1) != 0; }
+:CMPM Smem, lks is ((w15_8=0x60) ... & Smem) ; lks { TC = Smem == lks; }
+:CMPR cmprc, arf is w15_10=0x3d & w7_3=0x15 & cmprc & arf { TC = cmprc; }
+:CMPS src1, Smem is (w15_9=0x47 & src1) ... & Smem { local x:8 = src1; local hi:2 = x(2); local lo:2 = x:2; local hgt:1 = hi s> lo; local m:2 = lo; if (!hgt) goto <takelo>; m = hi; <takelo> Smem = m; TRN = (TRN << 1) | zext(!hgt); TC = !hgt; }
+:SACCD src1, Xmem, cond4 is w15_9=0x4f & src1 & Xmem & cond4 { if (!cond4) goto <done>; Xmem = src1(2); <done> }
+:SRCCD Xmem, cond4 is w15_8=0x9d & Xmem & cond4 { if (!cond4) goto <done>; Xmem = BRC; <done> }
+:STRCD Xmem, cond4 is w15_8=0x9c & Xmem & cond4 { if (!cond4) goto <done>; Xmem = T; <done> }
 
 # ---- control flow ----
-:B target is op16=0xf073 ; target { goto target; }
-:BD target is op16=0xf273 ; target { delayslot(4); goto target; }
-:BACC src1 is op7=0x7a & src1 & lo8=0xe2 { local t:2 = src1:2; goto [t]; }
-:BACCD src1 is op7=0x7b & src1 & lo8=0xe2 { local t:2 = src1:2; delayslot(2); goto [t]; }
-:BANZ target, SindS is (op8=0x6c & SindS) ; target { if (SindS != 0) goto target; }
-:BANZ target, SindL is (op8=0x6c ... & SindL) ; target { if (SindL != 0) goto target; }
-:BANZD target, SindS is (op8=0x6e & SindS) ; target { local v:2 = SindS; delayslot(4); if (v != 0) goto target; }
-:BANZD target, SindL is (op8=0x6e ... & SindL) ; target { local v:2 = SindL; delayslot(4); if (v != 0) goto target; }
-:BC target, cond is (op8=0xf8 & ind=0 & cond) ; target { if (cond) goto target; }
-:BCD target, cond is (op8=0xfa & ind=0 & cond) ; target { local c:1 = cond; delayslot(4); if (c) goto target; }
-:CALA src1 is op7=0x7a & src1 & lo8=0xe3 { local t:2 = src1:2; local r:2 = inst_next >> 1; push(r); call [t]; }
-:CALAD src1 is op7=0x7b & src1 & lo8=0xe3 { local t:2 = src1:2; local r:2 = (inst_next >> 1); push(r); delayslot(2); call [t]; }
-:CALL target is op16=0xf074 ; target { local r:2 = inst_next >> 1; push(r); call target; }
-:CALLD target is op16=0xf274 ; target { local r:2 = (inst_next >> 1); push(r); delayslot(4); call target; }
-:CC target, cond is (op8=0xf9 & ind=0 & cond) ; target { if (!cond) goto inst_next; local r:2 = inst_next >> 1; push(r); call target; }
-:CCD target, cond is (op8=0xfb & ind=0 & cond) ; target { local c:1 = cond; local r:2 = (inst_next >> 1); delayslot(4); if (!c) goto inst_next; push(r); call target; }
-:RET is op16=0xfc00 { local t:2 = 0; pop(t); return [t]; }
-:RETD is op16=0xfe00 { local t:2 = 0; pop(t); delayslot(2); return [t]; }
-:RC cond is op8=0xfc & cc8!=0 & cond { if (!cond) goto inst_next; local t:2 = 0; pop(t); return [t]; }
-:RCD cond is op8=0xfe & cc8!=0 & cond { local c:1 = cond; delayslot(2); if (!c) goto inst_next; local t:2 = 0; pop(t); return [t]; }
-:RETE is op16=0xf4eb { local t:2 = 0; pop(t); INTM = 0; return [t]; }
-:RETED is op16=0xf6eb { local t:2 = 0; pop(t); INTM = 0; delayslot(2); return [t]; }
-:RETF is op16=0xf49b { local t:2 = 0; pop(t); INTM = 0; return [t]; }
-:RETFD is op16=0xf69b { local t:2 = 0; pop(t); INTM = 0; delayslot(2); return [t]; }
-:FB xtarget is (op8=0xf8 & ind=1 & xpage) ... & xtarget { XPC = xpage; goto xtarget; }
-:FBD xtarget is (op8=0xfa & ind=1 & xpage) ... & xtarget { delayslot(4); XPC = xpage; goto xtarget; }
-:FCALL xtarget is (op8=0xf9 & ind=1 & xpage) ... & xtarget { local r:2 = inst_next >> 1; local x:2 = XPC; push(r); push(x); XPC = xpage; call xtarget; }
-:FCALLD xtarget is (op8=0xfb & ind=1 & xpage) ... & xtarget { local r:2 = (inst_next >> 1); local x:2 = XPC; push(r); push(x); delayslot(4); XPC = xpage; call xtarget; }
-:FBACC src1 is op7=0x7a & src1 & lo8=0xe6 { local h:2 = src1(2); XPC = h & 0x7f; local t:2 = src1:2; goto [t]; }
-:FBACCD src1 is op7=0x7b & src1 & lo8=0xe6 { local h:2 = src1(2); local t:2 = src1:2; delayslot(2); XPC = h & 0x7f; goto [t]; }
-:FCALA src1 is op7=0x7a & src1 & lo8=0xe7 { local h:2 = src1(2); local t:2 = src1:2; local r:2 = inst_next >> 1; local x:2 = XPC; push(r); push(x); XPC = h & 0x7f; call [t]; }
-:FCALAD src1 is op7=0x7b & src1 & lo8=0xe7 { local h:2 = src1(2); local t:2 = src1:2; local r:2 = (inst_next >> 1); local x:2 = XPC; push(r); push(x); delayslot(2); XPC = h & 0x7f; call [t]; }
-:FRET is op16=0xf4e4 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); XPC = x & 0x7f; return [t]; }
-:FRETD is op16=0xf6e4 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); delayslot(2); XPC = x & 0x7f; return [t]; }
-:FRETE is op16=0xf4e5 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); XPC = x & 0x7f; INTM = 0; return [t]; }
-:FRETED is op16=0xf6e5 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); delayslot(2); XPC = x & 0x7f; INTM = 0; return [t]; }
-:INTR k5u is op11=0x7be & k5u { softwareInterrupt(k5u:1); }
-:TRAP k5u is op11=0x7a6 & k5u { softwareInterrupt(k5u:1); }
-:IDLE "1" is op6=0x3d & idlek=0 & lo8=0xe1 { idle(1:1); }
-:IDLE "3" is op6=0x3d & idlek=1 & lo8=0xe1 { idle(3:1); }
-:IDLE "2" is op6=0x3d & idlek=2 & lo8=0xe1 { idle(2:1); }
-:RESET is op16=0xf7e0 { softwareReset(); }
-:ESTOP is op16=0xf4f0 { emulationStop(); }
-:NOP is op16=0xf495 {  }
-:RPT Smem is (op8=0x47) ... & Smem { RC = Smem; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
-:RPT "#"^k8u is op8=0xec & k8u { RC = k8u; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
-:RPT lk is op16=0xf070 ; lk { RC = lk; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
-:RPTB pmad is op16=0xf072 ; pmad { RSA = inst_next >> 1; local e:2 = &pmad; REA = e >> 1; BRAF = 1; }
-:RPTBD pmad is op16=0xf272 ; pmad { RSA = (inst_next >> 1); local e:2 = &pmad; REA = e >> 1; BRAF = 1; delayslot(4); }
-:RPTZ dst8, lk is (op7=0x78 & dst8 & lo8=0x71) ; lk { dst8 = 0; RC = lk; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
+:B target is w15_0=0xf073 ; target { goto target; }
+:BD target is w15_0=0xf273 ; target { delayslot(4); goto target; }
+:BACC src1 is w15_9=0x7a & w7_0=0xe2 & src1 { local t:2 = src1:2; goto [t]; }
+:BACCD src1 is w15_9=0x7b & w7_0=0xe2 & src1 { local t:2 = src1:2; delayslot(2); goto [t]; }
+:BANZ target, SindS is (w15_8=0x6c & SindS) ; target { if (SindS != 0) goto target; }
+:BANZ target, SindL is (w15_8=0x6c ... & SindL) ; target { if (SindL != 0) goto target; }
+:BANZD target, SindS is (w15_8=0x6e & SindS) ; target { local v:2 = SindS; delayslot(4); if (v != 0) goto target; }
+:BANZD target, SindL is (w15_8=0x6e ... & SindL) ; target { local v:2 = SindL; delayslot(4); if (v != 0) goto target; }
+:BC target, cond is (w15_8=0xf8 & ind=0 & cond) ; target { if (cond) goto target; }
+:BCD target, cond is (w15_8=0xfa & ind=0 & cond) ; target { local c:1 = cond; delayslot(4); if (c) goto target; }
+:CALA src1 is w15_9=0x7a & w7_0=0xe3 & src1 { local t:2 = src1:2; local r:2 = inst_next >> 1; push(r); call [t]; }
+:CALAD src1 is w15_9=0x7b & w7_0=0xe3 & src1 { local t:2 = src1:2; local r:2 = (inst_next >> 1); push(r); delayslot(2); call [t]; }
+:CALL target is w15_0=0xf074 ; target { local r:2 = inst_next >> 1; push(r); call target; }
+:CALLD target is w15_0=0xf274 ; target { local r:2 = (inst_next >> 1); push(r); delayslot(4); call target; }
+:CC target, cond is (w15_8=0xf9 & ind=0 & cond) ; target { if (!cond) goto inst_next; local r:2 = inst_next >> 1; push(r); call target; }
+:CCD target, cond is (w15_8=0xfb & ind=0 & cond) ; target { local c:1 = cond; local r:2 = (inst_next >> 1); delayslot(4); if (!c) goto inst_next; push(r); call target; }
+:RET is w15_0=0xfc00 { local t:2 = 0; pop(t); return [t]; }
+:RETD is w15_0=0xfe00 { local t:2 = 0; pop(t); delayslot(2); return [t]; }
+:RC cond is w15_8=0xfc & cc8!=0 & cond { if (!cond) goto inst_next; local t:2 = 0; pop(t); return [t]; }
+:RCD cond is w15_8=0xfe & cc8!=0 & cond { local c:1 = cond; delayslot(2); if (!c) goto inst_next; local t:2 = 0; pop(t); return [t]; }
+:RETE is w15_0=0xf4eb { local t:2 = 0; pop(t); INTM = 0; return [t]; }
+:RETED is w15_0=0xf6eb { local t:2 = 0; pop(t); INTM = 0; delayslot(2); return [t]; }
+:RETF is w15_0=0xf49b { local t:2 = 0; pop(t); INTM = 0; return [t]; }
+:RETFD is w15_0=0xf69b { local t:2 = 0; pop(t); INTM = 0; delayslot(2); return [t]; }
+:FB xtarget is (w15_7=0x1f1 & xpage) ... & xtarget { XPC = xpage; goto xtarget; }
+:FBD xtarget is (w15_7=0x1f5 & xpage) ... & xtarget { delayslot(4); XPC = xpage; goto xtarget; }
+:FCALL xtarget is (w15_7=0x1f3 & xpage) ... & xtarget { local r:2 = inst_next >> 1; local x:2 = XPC; push(r); push(x); XPC = xpage; call xtarget; }
+:FCALLD xtarget is (w15_7=0x1f7 & xpage) ... & xtarget { local r:2 = (inst_next >> 1); local x:2 = XPC; push(r); push(x); delayslot(4); XPC = xpage; call xtarget; }
+:FBACC src1 is w15_9=0x7a & w7_0=0xe6 & src1 { local h:2 = src1(2); XPC = h & 0x7f; local t:2 = src1:2; goto [t]; }
+:FBACCD src1 is w15_9=0x7b & w7_0=0xe6 & src1 { local h:2 = src1(2); local t:2 = src1:2; delayslot(2); XPC = h & 0x7f; goto [t]; }
+:FCALA src1 is w15_9=0x7a & w7_0=0xe7 & src1 { local h:2 = src1(2); local t:2 = src1:2; local r:2 = inst_next >> 1; local x:2 = XPC; push(r); push(x); XPC = h & 0x7f; call [t]; }
+:FCALAD src1 is w15_9=0x7b & w7_0=0xe7 & src1 { local h:2 = src1(2); local t:2 = src1:2; local r:2 = (inst_next >> 1); local x:2 = XPC; push(r); push(x); delayslot(2); XPC = h & 0x7f; call [t]; }
+:FRET is w15_0=0xf4e4 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); XPC = x & 0x7f; return [t]; }
+:FRETD is w15_0=0xf6e4 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); delayslot(2); XPC = x & 0x7f; return [t]; }
+:FRETE is w15_0=0xf4e5 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); XPC = x & 0x7f; INTM = 0; return [t]; }
+:FRETED is w15_0=0xf6e5 { local x:2 = 0; local t:2 = 0; pop(x); pop(t); delayslot(2); XPC = x & 0x7f; INTM = 0; return [t]; }
+:INTR k5u is w15_5=0x7be & k5u { softwareInterrupt(k5u:1); }
+:TRAP k5u is w15_5=0x7a6 & k5u { softwareInterrupt(k5u:1); }
+:IDLE "1" is w15_0=0xf4e1 { idle(1:1); }
+:IDLE "3" is w15_0=0xf5e1 { idle(3:1); }
+:IDLE "2" is w15_0=0xf6e1 { idle(2:1); }
+:RESET is w15_0=0xf7e0 { softwareReset(); }
+:NOP is w15_0=0xf495 {  }
+:RPT Smem is (w15_8=0x47) ... & Smem { RC = Smem; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
+:RPT "#"^k8u is w15_8=0xec & k8u { RC = k8u; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
+:RPT lk is w15_0=0xf070 ; lk { RC = lk; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
+:RPTB pmad is w15_0=0xf072 ; pmad { RSA = inst_next >> 1; local e:2 = &pmad; REA = e >> 1; BRAF = 1; }
+:RPTBD pmad is w15_0=0xf272 ; pmad { RSA = (inst_next >> 1); local e:2 = &pmad; REA = e >> 1; BRAF = 1; delayslot(4); }
+:RPTZ dst8, lk is (w15_9=0x78 & w7_0=0x71 & dst8) ; lk { dst8 = 0; RC = lk; <top> delayslot(2); if (RC == 0) goto <done>; RC = RC - 1; goto <top>; <done> }
 
 # XC n, cond: execute the next n words only if cond is true
 xcskip: skip is xcn=0 [ skip = inst_next + 1; ] { export *[prog]:2 skip; }
 xcskip: skip is xcn=1 [ skip = inst_next + 2; ] { export *[prog]:2 skip; }
-:XC "1", cond is op6=0x3f & b8=1 & xcn=0 & cond & xcskip { if (!cond) goto xcskip; }   # FD00/FD00
-:XC "2", cond is op6=0x3f & b8=1 & xcn=1 & cond & xcskip { if (!cond) goto xcskip; }
+:XC "1", cond is w15_8=0xfd & cond & xcskip { if (!cond) goto xcskip; }
+:XC "2", cond is w15_8=0xff & cond & xcskip { if (!cond) goto xcskip; }
 
 # ---- parallel instructions (one word, two operations) ----
-:LD Xmem, dst8 "||" "MAC" Ymem, rnd^ovr^ovd is ovd & ovr & op7=0x54 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd + p; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }  # A800
-:LD Xmem, dst8 "||" "MACR" Ymem, rnd^ovr^ovd is ovd & ovr & op7=0x55 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }  # AA00
-:LD Xmem, dst8 "||" "MAS" Ymem, rnd^ovr^ovd is ovd & ovr & op7=0x56 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd - p; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }  # AC00
-:LD Xmem, dst8 "||" "MASR" Ymem, rnd^ovr^ovd is ovd & ovr & op7=0x57 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }  # AE00
-:ST src9, Ymem "||" "ADD" Xmem, dst8^dsto^ovd is ovd & op6=0x30 & src9 & dst8 & dsto & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local _cx1:8 = dsto; local _cy1:8 = (_x_Xmem << 16); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }  # C000
-:ST src9, Ymem "||" "SUB" Xmem, dst8^dsto^ovd is ovd & op6=0x31 & src9 & dst8 & dsto & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local _cx1:8 = (_x_Xmem << 16); local _cy1:8 = dsto; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }  # C400
-:ST src9, Ymem "||" "LD" Xmem, dst8^ovd is ovd & op6=0x32 & src9 & dst8 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local _r1:8 = _x_Xmem << 16; finish(dst8, _r1, ovd); }  # C800
-:ST src9, Ymem "||" "MPY" Xmem, dst8 is op6=0x33 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; mul16(dst8, T, Xmem); }  # CC00
-:ST src9, Ymem "||" "MAC" Xmem, dst8^ovd is ovd & op6=0x34 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 + p; finish(dst8, _r1, ovd); }  # D000
-:ST src9, Ymem "||" "MACR" Xmem, dst8^ovd is ovd & op6=0x35 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }  # D400
-:ST src9, Ymem "||" "MAS" Xmem, dst8^ovd is ovd & op6=0x36 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 - p; finish(dst8, _r1, ovd); }  # D800
-:ST src9, Ymem "||" "MASR" Xmem, dst8^ovd is ovd & op6=0x37 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }  # DC00
-:ST src9, Ymem "||" "LD" Xmem, "T" is op6=0x39 & src9 & b8=0 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; T = Xmem; }  # E400 (bit 8 clear; E5/E7 are MVDD/MVMM)
+:LD Xmem, dst8 "||" "MAC" Ymem, rnd^ovr^ovd is ovd & ovr & w15_9=0x54 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd + p; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }
+:LD Xmem, dst8 "||" "MACR" Ymem, rnd^ovr^ovd is ovd & ovr & w15_9=0x55 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }
+:LD Xmem, dst8 "||" "MAS" Ymem, rnd^ovr^ovd is ovd & ovr & w15_9=0x56 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd - p; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }
+:LD Xmem, dst8 "||" "MASR" Ymem, rnd^ovr^ovd is ovd & ovr & w15_9=0x57 & dst8 & Xmem & Ymem & rnd { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local y:2 = Ymem; local p:8 = 0; mul16(p, T, y); local _r1:8 = rnd - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(rnd, _r1, ovr); local _r2:8 = _x_Xmem << 16; finish(dst8, _r2, ovd); }
+:ST src9, Ymem "||" "ADD" Xmem, dst8^dsto^ovd is ovd & w15_10=0x30 & src9 & dst8 & dsto & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local _cx1:8 = dsto; local _cy1:8 = (_x_Xmem << 16); local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ST src9, Ymem "||" "SUB" Xmem, dst8^dsto^ovd is ovd & w15_10=0x31 & src9 & dst8 & dsto & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local _cx1:8 = (_x_Xmem << 16); local _cy1:8 = dsto; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(dst8, _r1, ovd); }
+:ST src9, Ymem "||" "LD" Xmem, dst8^ovd is ovd & w15_10=0x32 & src9 & dst8 & Xmem & Ymem { local _x_Xmem:8 = 0; ldx(_x_Xmem, Xmem); local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local _r1:8 = _x_Xmem << 16; finish(dst8, _r1, ovd); }
+:ST src9, Ymem "||" "MPY" Xmem, dst8 is w15_10=0x33 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; mul16(dst8, T, Xmem); }
+:ST src9, Ymem "||" "MAC" Xmem, dst8^ovd is ovd & w15_10=0x34 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 + p; finish(dst8, _r1, ovd); }
+:ST src9, Ymem "||" "MACR" Xmem, dst8^ovd is ovd & w15_10=0x35 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 + p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }
+:ST src9, Ymem "||" "MAS" Xmem, dst8^ovd is ovd & w15_10=0x36 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 - p; finish(dst8, _r1, ovd); }
+:ST src9, Ymem "||" "MASR" Xmem, dst8^ovd is ovd & w15_10=0x37 & src9 & dst8 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; local p:8 = 0; mul16(p, T, Xmem); local _r1:8 = dst8 - p + 0x8000; _r1 = _r1 & 0xffffffffffff0000; finish(dst8, _r1, ovd); }
+:ST src9, Ymem "||" "LD" Xmem, "T" is w15_10=0x39 & w8_8=0x0 & src9 & Xmem & Ymem { local _sv:2 = 0; stsh(_sv, src9); Ymem = _sv; T = Xmem; }
 
-x6f_add_00: e_shift is e_top6=3 & e_sub=0 & e_src=0 & e_dst=0 & e_shift { export *[const]:1 e_shift; }
-x6f_add_01: e_shift is e_top6=3 & e_sub=0 & e_src=0 & e_dst=1 & e_shift { export *[const]:1 e_shift; }
-x6f_add_10: e_shift is e_top6=3 & e_sub=0 & e_src=1 & e_dst=0 & e_shift { export *[const]:1 e_shift; }
-x6f_add_11: e_shift is e_top6=3 & e_sub=0 & e_src=1 & e_dst=1 & e_shift { export *[const]:1 e_shift; }
-x6f_sub_00: e_shift is e_top6=3 & e_sub=1 & e_src=0 & e_dst=0 & e_shift { export *[const]:1 e_shift; }
-x6f_sub_01: e_shift is e_top6=3 & e_sub=1 & e_src=0 & e_dst=1 & e_shift { export *[const]:1 e_shift; }
-x6f_sub_10: e_shift is e_top6=3 & e_sub=1 & e_src=1 & e_dst=0 & e_shift { export *[const]:1 e_shift; }
-x6f_sub_11: e_shift is e_top6=3 & e_sub=1 & e_src=1 & e_dst=1 & e_shift { export *[const]:1 e_shift; }
-x6f_ld_00: e_shift is e_top6=3 & e_sub=2 & e_src=0 & e_dst=0 & e_shift { export *[const]:1 e_shift; }
-x6f_ld_01: e_shift is e_top6=3 & e_sub=2 & e_src=0 & e_dst=1 & e_shift { export *[const]:1 e_shift; }
-x6f_sth_00: e_shift is e_top6=3 & e_sub=3 & e_src=0 & e_dst=0 & e_shift { export *[const]:1 e_shift; }
-x6f_sth_01: e_shift is e_top6=3 & e_sub=3 & e_src=0 & e_dst=1 & e_shift { export *[const]:1 e_shift; }
-x6f_stl_00: e_shift is e_top6=3 & e_sub=4 & e_src=0 & e_dst=0 & e_shift { export *[const]:1 e_shift; }
-x6f_stl_01: e_shift is e_top6=3 & e_sub=4 & e_src=0 & e_dst=1 & e_shift { export *[const]:1 e_shift; }
-:ADD SmemS, x6f_add_00, "A", "A" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_00 { local v:8 = sext(SmemS); local sh:1 = x6f_add_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
-:ADD SmemL, x6f_add_00, "A", "A" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_00 { local v:8 = sext(SmemL); local sh:1 = x6f_add_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
-:ADD SmemS, x6f_add_01, "A", "B" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_01 { local v:8 = sext(SmemS); local sh:1 = x6f_add_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
-:ADD SmemL, x6f_add_01, "A", "B" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_01 { local v:8 = sext(SmemL); local sh:1 = x6f_add_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
-:ADD SmemS, x6f_add_10, "B", "A" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_10 { local v:8 = sext(SmemS); local sh:1 = x6f_add_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
-:ADD SmemL, x6f_add_10, "B", "A" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_10 { local v:8 = sext(SmemL); local sh:1 = x6f_add_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
-:ADD SmemS, x6f_add_11, "B", "B" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_11 { local v:8 = sext(SmemS); local sh:1 = x6f_add_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
-:ADD SmemL, x6f_add_11, "B", "B" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_11 { local v:8 = sext(SmemL); local sh:1 = x6f_add_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
-:SUB SmemS, x6f_sub_00, "A", "A" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_00 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
-:SUB SmemL, x6f_sub_00, "A", "A" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_00 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
-:SUB SmemS, x6f_sub_01, "A", "B" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_01 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
-:SUB SmemL, x6f_sub_01, "A", "B" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_01 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
-:SUB SmemS, x6f_sub_10, "B", "A" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_10 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
-:SUB SmemL, x6f_sub_10, "B", "A" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_10 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
-:SUB SmemS, x6f_sub_11, "B", "B" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_11 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
-:SUB SmemL, x6f_sub_11, "B", "B" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_11 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
-:LD SmemS, x6f_ld_00, "A" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_ld_00 { local v:8 = sext(SmemS); local sh:1 = x6f_ld_00; ashift(v, sh); local _r1:8 = v; finish(A, _r1, OVA); }
-:LD SmemL, x6f_ld_00, "A" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_ld_00 { local v:8 = sext(SmemL); local sh:1 = x6f_ld_00; ashift(v, sh); local _r1:8 = v; finish(A, _r1, OVA); }
-:LD SmemS, x6f_ld_01, "B" is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_ld_01 { local v:8 = sext(SmemS); local sh:1 = x6f_ld_01; ashift(v, sh); local _r1:8 = v; finish(B, _r1, OVB); }
-:LD SmemL, x6f_ld_01, "B" is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_ld_01 { local v:8 = sext(SmemL); local sh:1 = x6f_ld_01; ashift(v, sh); local _r1:8 = v; finish(B, _r1, OVB); }
-:STH "A", x6f_sth_00, SmemS is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sth_00 { local v:8 = A; local sh:1 = x6f_sth_00; ashift(v, sh); SmemS = v(2); }
-:STH "A", x6f_sth_00, SmemL is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sth_00 { local v:8 = A; local sh:1 = x6f_sth_00; ashift(v, sh); SmemL = v(2); }
-:STH "B", x6f_sth_01, SmemS is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sth_01 { local v:8 = B; local sh:1 = x6f_sth_01; ashift(v, sh); SmemS = v(2); }
-:STH "B", x6f_sth_01, SmemL is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sth_01 { local v:8 = B; local sh:1 = x6f_sth_01; ashift(v, sh); SmemL = v(2); }
-:STL "A", x6f_stl_00, SmemS is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_stl_00 { local v:8 = A; local sh:1 = x6f_stl_00; ashift(v, sh); SmemS = v:2; }
-:STL "A", x6f_stl_00, SmemL is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_stl_00 { local v:8 = A; local sh:1 = x6f_stl_00; ashift(v, sh); SmemL = v:2; }
-:STL "B", x6f_stl_01, SmemS is (op8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_stl_01 { local v:8 = B; local sh:1 = x6f_stl_01; ashift(v, sh); SmemS = v:2; }
-:STL "B", x6f_stl_01, SmemL is ((op8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_stl_01 { local v:8 = B; local sh:1 = x6f_stl_01; ashift(v, sh); SmemL = v:2; }
+x6f_add_00: e_shift is x15_5=0x60 & e_shift { export *[const]:1 e_shift; }
+x6f_add_01: e_shift is x15_5=0x68 & e_shift { export *[const]:1 e_shift; }
+x6f_add_10: e_shift is x15_5=0x70 & e_shift { export *[const]:1 e_shift; }
+x6f_add_11: e_shift is x15_5=0x78 & e_shift { export *[const]:1 e_shift; }
+x6f_sub_00: e_shift is x15_5=0x61 & e_shift { export *[const]:1 e_shift; }
+x6f_sub_01: e_shift is x15_5=0x69 & e_shift { export *[const]:1 e_shift; }
+x6f_sub_10: e_shift is x15_5=0x71 & e_shift { export *[const]:1 e_shift; }
+x6f_sub_11: e_shift is x15_5=0x79 & e_shift { export *[const]:1 e_shift; }
+x6f_ld_00: e_shift is x15_5=0x62 & e_shift { export *[const]:1 e_shift; }
+x6f_ld_01: e_shift is x15_5=0x6a & e_shift { export *[const]:1 e_shift; }
+x6f_sth_00: e_shift is x15_5=0x63 & e_shift { export *[const]:1 e_shift; }
+x6f_sth_01: e_shift is x15_5=0x6b & e_shift { export *[const]:1 e_shift; }
+x6f_stl_00: e_shift is x15_5=0x64 & e_shift { export *[const]:1 e_shift; }
+x6f_stl_01: e_shift is x15_5=0x6c & e_shift { export *[const]:1 e_shift; }
+:ADD SmemS, x6f_add_00, "A", "A" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_00 { local v:8 = sext(SmemS); local sh:1 = x6f_add_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
+:ADD SmemL, x6f_add_00, "A", "A" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_00 { local v:8 = sext(SmemL); local sh:1 = x6f_add_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
+:ADD SmemS, x6f_add_01, "A", "B" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_01 { local v:8 = sext(SmemS); local sh:1 = x6f_add_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
+:ADD SmemL, x6f_add_01, "A", "B" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_01 { local v:8 = sext(SmemL); local sh:1 = x6f_add_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
+:ADD SmemS, x6f_add_10, "B", "A" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_10 { local v:8 = sext(SmemS); local sh:1 = x6f_add_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
+:ADD SmemL, x6f_add_10, "B", "A" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_10 { local v:8 = sext(SmemL); local sh:1 = x6f_add_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(A, _r1, OVA); }
+:ADD SmemS, x6f_add_11, "B", "B" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_add_11 { local v:8 = sext(SmemS); local sh:1 = x6f_add_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
+:ADD SmemL, x6f_add_11, "B", "B" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_add_11 { local v:8 = sext(SmemL); local sh:1 = x6f_add_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 + _cy1; cadd(_cx1, _cy1); finish(B, _r1, OVB); }
+:SUB SmemS, x6f_sub_00, "A", "A" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_00 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
+:SUB SmemL, x6f_sub_00, "A", "A" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_00 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_00; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
+:SUB SmemS, x6f_sub_01, "A", "B" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_01 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
+:SUB SmemL, x6f_sub_01, "A", "B" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_01 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_01; ashift(v, sh); local _cx1:8 = A; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
+:SUB SmemS, x6f_sub_10, "B", "A" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_10 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
+:SUB SmemL, x6f_sub_10, "B", "A" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_10 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_10; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(A, _r1, OVA); }
+:SUB SmemS, x6f_sub_11, "B", "B" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sub_11 { local v:8 = sext(SmemS); local sh:1 = x6f_sub_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
+:SUB SmemL, x6f_sub_11, "B", "B" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sub_11 { local v:8 = sext(SmemL); local sh:1 = x6f_sub_11; ashift(v, sh); local _cx1:8 = B; local _cy1:8 = v; local _r1:8 = _cx1 - _cy1; csub(_cx1, _cy1); finish(B, _r1, OVB); }
+:LD SmemS, x6f_ld_00, "A" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_ld_00 { local v:8 = sext(SmemS); local sh:1 = x6f_ld_00; ashift(v, sh); local _r1:8 = v; finish(A, _r1, OVA); }
+:LD SmemL, x6f_ld_00, "A" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_ld_00 { local v:8 = sext(SmemL); local sh:1 = x6f_ld_00; ashift(v, sh); local _r1:8 = v; finish(A, _r1, OVA); }
+:LD SmemS, x6f_ld_01, "B" is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_ld_01 { local v:8 = sext(SmemS); local sh:1 = x6f_ld_01; ashift(v, sh); local _r1:8 = v; finish(B, _r1, OVB); }
+:LD SmemL, x6f_ld_01, "B" is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_ld_01 { local v:8 = sext(SmemL); local sh:1 = x6f_ld_01; ashift(v, sh); local _r1:8 = v; finish(B, _r1, OVB); }
+:STH "A", x6f_sth_00, SmemS is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sth_00 { local v:8 = A; local sh:1 = x6f_sth_00; ashift(v, sh); SmemS = v(2); }
+:STH "A", x6f_sth_00, SmemL is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sth_00 { local v:8 = A; local sh:1 = x6f_sth_00; ashift(v, sh); SmemL = v(2); }
+:STH "B", x6f_sth_01, SmemS is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_sth_01 { local v:8 = B; local sh:1 = x6f_sth_01; ashift(v, sh); SmemS = v(2); }
+:STH "B", x6f_sth_01, SmemL is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_sth_01 { local v:8 = B; local sh:1 = x6f_sth_01; ashift(v, sh); SmemL = v(2); }
+:STL "A", x6f_stl_00, SmemS is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_stl_00 { local v:8 = A; local sh:1 = x6f_stl_00; ashift(v, sh); SmemS = v:2; }
+:STL "A", x6f_stl_00, SmemL is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_stl_00 { local v:8 = A; local sh:1 = x6f_stl_00; ashift(v, sh); SmemL = v:2; }
+:STL "B", x6f_stl_01, SmemS is (w15_8=0x6f & (ind=0 | mod<12) & SmemS) ; x6f_stl_01 { local v:8 = B; local sh:1 = x6f_stl_01; ashift(v, sh); SmemS = v:2; }
+:STL "B", x6f_stl_01, SmemL is ((w15_8=0x6f & ind=1 & mod>=12) ... & SmemL) ; x6f_stl_01 { local v:8 = B; local sh:1 = x6f_stl_01; ashift(v, sh); SmemL = v:2; }

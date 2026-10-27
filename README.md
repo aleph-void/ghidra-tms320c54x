@@ -7,8 +7,11 @@ It was made for the GRE PSR-500/600 DSP firmware but covers the whole C54x instr
 ## What's in it
 
 - `data/languages/TMS320C54x.slaspec`: the instruction spec, **generated** by `make_slaspec.py`
-  from the encodings in GNU binutils' `opcodes/tic54x-opc.c` (213 instruction forms plus the 13
-  parallel forms, 67 condition-code combinations, every status bit, the memory-mapped registers).
+  (the instruction forms, the 13 parallel forms, the condition-code combinations, every status bit,
+  the memory-mapped registers). The instruction encodings come from `tools/c54x_encodings.py`, a
+  clean-room transcription of TI's SPRU172C (opcode boxes, cited by page) and SPRU131G (addressing
+  fields), made by Ghidra-Rare to replace the encodings this spec originally took from GNU binutils'
+  `opcodes/tic54x-opc.c`; see [GHIDRA-RARE.md](GHIDRA-RARE.md).
 - Word-addressed `prog`, `data` and `io` spaces (16-bit big-endian words). Accumulators A/B are
   40-bit values in 64-bit registers with `AL`/`AH`/`AG` views; status bits are separate registers.
 - Direct addressing follows `CPL`: after `SSBX CPL` the operands read `*SP(n)`, after `RSBX CPL`
@@ -27,10 +30,12 @@ It was made for the GRE PSR-500/600 DSP firmware but covers the whole C54x instr
 
 ## Validation
 
-On the PSR-500/600 DSP firmware the spec decodes 7,217 instructions (75 different mnemonics,
-81% of the image). An independent decoder built straight from the binutils table agrees on
-**every** instruction's mnemonic and length. Instruction forms this firmware doesn't use come from
-the same table but haven't been exercised against real code.
+Upstream's original validation (of the binutils-derived encodings): on the PSR-500/600 DSP firmware
+the spec decoded 7,217 instructions (75 different mnemonics, 81% of the image), and an independent
+decoder built from the same binutils table agreed on every instruction's mnemonic and length.
+
+The encodings now come from the TI manuals; the decode of every first word against that table, the
+module and GNU objdump, and the other Ghidra-Rare tests are in [GHIDRA-RARE.md](GHIDRA-RARE.md).
 
 ## Modelling limits
 
