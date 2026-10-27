@@ -34,13 +34,18 @@ the same table but haven't been exercised against real code.
 
 ## Modelling limits
 
-- RPT/RPTB/RPTZ only set the repeat registers; the decompiler doesn't model the repetition.
-- Loads into an accumulator sign-extend (SXM=1). OVM saturation, rounding details, circular and
-  bit-reversed addressing are simplified. FIRS, LMS, ABDST, SQDST, POLY, EXP, NORM, SAT and CMPS
-  appear as named operations (`firs(...)`) rather than arithmetic.
-- Far branches/calls (FB, FCALL, ...) ignore the 7-bit page: program space is 64K words.
-- `XC` skips the next 1 or 2 words when its condition is false (modelled as a conditional branch).
-- Ghidra prefixes instructions that sit in a delay slot with `_` (e.g. `_LD`).
+Status after the Ghidra-Rare verification (details and numbers: [GHIDRA-RARE.md](GHIDRA-RARE.md); prebuilt zips for Ghidra 12.1.3, 12.1.4 and 12.2 are on the fork's Releases page):
+
+- RPT/RPTZ: **fixed**. The repeated instruction is inlined by `delayslot()` in a p-code loop that runs it RC+1 times. RPTB/RPTBD: **remains**: the loop-back at the end address (REA) is done by an address comparator, not by an instruction, so no constructor can express it; RSA/REA/BRAF are set.
+- Accumulator results: **fixed**. ADD/SUB/NEG/ABS/MAC... wrap to 40 bits, set OVA/OVB, saturate to 32 bits with OVM=1, honour SXM, and set C as in SPRU131G table 4-1; rounding (R suffix) clears bits 15-0. FIRS, LMS, ABDST, SQDST, POLY, EXP, NORM, SAT, CMPS are real p-code (no more pcodeops).
+- Circular (BK) and bit-reversed (AR0, reverse carry) addressing: **fixed** (SPRU131G 5.5.3.4 / 5.5.3.5; the manual's bit-reversed example is a test).
+- Far branches/calls/returns: **fixed**: the 7-bit page is shown (`FB 0x2:0x1234`), written to XPC, and FCALL/FRET push/pop XPC and the return address.
+- XC is a conditional branch over the next 1 or 2 words (correct); delay-slot instructions are prefixed `_` by Ghidra.
+- ST0/ST1: **fixed for direct PSHM/POPM/LDM/STLM/STM/MVDM/MVMD**: the registers are assembled from / split into the flag registers. **Remains**: data memory 0x00-0x1F is not aliased to the CPU registers for ordinary data accesses (e.g. `LD @6,A`), and a write to ST1 does not change the CPL context bit the listing uses.
+- Dual 16-bit mode (C16=1) of DADD/DSUB/DRSUB/DADST/DSADT/DSUBT: **fixed** (the C16=0 forms of DADST/DSADT/DSUBT had the wrong operand and are corrected).
+- Parallel ST||ADD/SUB/LD/MAC...: **fixed** (store of src << (ASM-16); ST||ADD/SUB use the other accumulator).
+- IDLE K encodings, BIO condition polarity, MAX/MIN carry, SUBC carry, indirect addressing of the MMR instructions: **fixed** (see GHIDRA-RARE.md).
+- **Remains**: 3-word 0x6Fxx forms (ADD/SUB/LD/STH/STL Smem,SHIFT) with a long-offset/absolute Smem do not decode when the offset word lies in 0x0C00-0x0FFF (cause not found in the SLEIGH decision tree); compatibility mode (CMPT=1, ARP updates) is not modelled; XPC-extended program space beyond 64K words is not modelled.
 
 ## Install
 
@@ -53,6 +58,10 @@ Headless `-processor` checks languages before it loads user extensions, so for h
 
 1. Open any program (or none) and run **C54xImportBootImage**; choose the decrypted boot-table file.
 2. Open the new program, run **C54xSeedFunctions**, then **Analysis → Auto Analyze**.
+
+## Tests
+
+`test/run-tests.sh` (see its header); results in [GHIDRA-RARE.md](GHIDRA-RARE.md).
 
 ## Regenerate
 
